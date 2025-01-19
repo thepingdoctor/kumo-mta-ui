@@ -197,7 +197,7 @@ server {
 
 ## 📝 Changelog
 
-### [1.0.0] - 2024-03-XX
+### [1.0.0] - 2025-01-19
 - Initial release
 - Core dashboard functionality
 - Queue management system
