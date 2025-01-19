@@ -1,4 +1,4 @@
-# KumoMTA Admin Dashboard
+# [KumoMTA](https://kumomta.com) Admin Dashboard
 
 [![React](https://img.shields.io/badge/React-18.3-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
