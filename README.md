@@ -217,7 +217,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 For support, please:
 1. Check the [GitHub Issues](https://github.com/yourusername/kumo-mta-dashboard/issues)
 2. Create a new issue if needed
-3. Join our [Discord community](https://discord.gg/kumomta)
 
 ## 🙏 Acknowledgments
 
