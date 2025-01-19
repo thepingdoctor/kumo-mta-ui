@@ -5,7 +5,7 @@
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-blue.svg)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A modern, responsive web interface for managing KumoMTA email servers. This dashboard provides comprehensive tools for monitoring, configuring, and maintaining email delivery infrastructure.
+A modern, responsive web interface for managing [KumoMTA](https://kumomta.com) email servers. This dashboard provides comprehensive tools for monitoring, configuring, and maintaining email delivery infrastructure.
 
 ## 🚀 Key Features
 
