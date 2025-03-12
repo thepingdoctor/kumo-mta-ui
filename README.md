@@ -43,7 +43,7 @@ A modern, responsive web interface for managing [KumoMTA](https://kumomta.com) e
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/kumo-mta-dashboard.git
+   git clone https://github.com/thepingdoctor/kumo-mta-dashboard.git
    cd kumo-mta-dashboard
    ```
 
@@ -215,7 +215,7 @@ This project is licensed under the MIT License and offered with the hope that it
 ## 📞 Support
 
 For support, please:
-1. Check the [GitHub Issues](https://github.com/yourusername/kumo-mta-dashboard/issues)
+1. Check the [GitHub Issues](https://github.com/thepingdoctor/kumo-mta-dashboard/issues)
 2. Create a new issue if needed
 
 ## 🙏 Acknowledgments
