@@ -6,27 +6,20 @@ import Dashboard from './components/Dashboard';
 import QueueManager from './components/queue/QueueManager';
 import ConfigEditor from './components/config/ConfigEditor';
 import ErrorBoundary from './components/ErrorBoundary';
-import { useAuthStore } from './store/authStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
-      staleTime: 30000,
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5000,
+      cacheTime: 300000,
+      refetchOnWindowFocus: false,
     },
   },
 });
 
 function App() {
-  // Auto-login as admin for demo
-  const user = useAuthStore((state) => state.user);
-  if (!user) {
-    useAuthStore.getState().login(
-      { id: '1', email: 'admin@example.com', role: 'admin' },
-      'demo-token'
-    );
-  }
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

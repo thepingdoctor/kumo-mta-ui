@@ -1,16 +1,16 @@
 import React from 'react';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, FieldError } from 'react-hook-form';
 import { AlertCircle } from 'lucide-react';
-import type { ConfigSection as ConfigSectionType } from '../../types/config';
+import type { ConfigSection as ConfigSectionType, ConfigField } from '../../types/config';
 
 interface ConfigSectionProps {
   section: ConfigSectionType;
-  control: Control<any>;
-  errors: Record<string, any>;
+  control: Control<Record<string, unknown>>;
+  errors: Record<string, FieldError>;
 }
 
 const ConfigSection: React.FC<ConfigSectionProps> = ({ section, control, errors }) => {
-  const renderField = (field: any) => {
+  const renderField = (field: ConfigField) => {
     const error = errors[field.id];
 
     return (

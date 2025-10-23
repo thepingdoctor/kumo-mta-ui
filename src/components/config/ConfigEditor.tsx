@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Save, RefreshCw } from 'lucide-react';
 import ConfigSection from './ConfigSection';
 import { configSections } from './configData';

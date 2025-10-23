@@ -12,7 +12,7 @@ export const useQueue = (filters: QueueFilter) => {
       try {
         const response = await apiService.queue.getItems(filters);
         return response.data;
-      } catch (error) {
+      } catch {
         throw new Error(ERROR_MESSAGES.QUEUE_LOAD_FAILED);
       }
     }

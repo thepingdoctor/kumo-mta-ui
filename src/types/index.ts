@@ -13,11 +13,30 @@ export interface EmailMetrics {
 
 export interface QueueItem {
   id: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
   recipient: string;
   sender: string;
-  status: 'queued' | 'sending' | 'failed';
+  serviceType: string;
+  priority: number;
+  status: 'waiting' | 'in-progress' | 'completed' | 'cancelled' | 'queued' | 'sending' | 'failed';
+  notes: string;
+  estimatedWaitTime: number; // in minutes
+  actualWaitTime?: number; // in minutes
   timestamp: string;
   retries: number;
+  createdAt: string;
+  updatedAt: string;
+  notificationsSent: NotificationRecord[];
+}
+
+export interface NotificationRecord {
+  id: string;
+  type: 'email' | 'sms';
+  status: 'sent' | 'failed';
+  timestamp: string;
 }
 
 export interface ServerStatus {

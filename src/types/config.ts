@@ -41,12 +41,14 @@ export interface ConfigSection {
   fields: ConfigField[];
 }
 
+export type ConfigFieldValue = string | number | boolean | string[];
+
 export interface ConfigField {
   id: string;
   label: string;
   description: string;
   type: 'text' | 'number' | 'boolean' | 'select' | 'array';
-  defaultValue: any;
+  defaultValue: ConfigFieldValue;
   validation?: {
     required?: boolean;
     min?: number;
