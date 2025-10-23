@@ -3,6 +3,8 @@ import { Activity, Mail, AlertTriangle, Clock, Server } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
+import { useChartData } from '../hooks/useChartData';
+import { LoadingSkeleton } from './common/LoadingSkeleton';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,7 +13,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 } from 'chart.js';
 
 ChartJS.register(
@@ -21,7 +24,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const Dashboard: React.FC = () => {
@@ -46,6 +50,9 @@ const Dashboard: React.FC = () => {
     retry: 3,
   });
 
+  // Use real-time chart data hook
+  const { chartData, isLoading: chartLoading } = useChartData('messages_sent', 24);
+
   const metrics = useMemo(() => ({
     sent: kumoMetrics?.messages_sent || 0,
     bounced: kumoMetrics?.bounces || 0,
@@ -53,45 +60,52 @@ const Dashboard: React.FC = () => {
     throughput: kumoMetrics?.throughput || 0
   }), [kumoMetrics]);
 
-  const chartData = useMemo(() => ({
-    labels: [],
-    datasets: [
-      {
-        label: 'Emails Sent',
-        data: [],
-        borderColor: 'rgb(59, 130, 246)',
-        tension: 0.4
-      }
-    ]
-  }), []);
-
   const chartOptions = useMemo(() => ({
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
       },
       title: {
         display: true,
-        text: 'Hourly Email Throughput'
+        text: 'Hourly Email Throughput (Last 24 Hours)',
+        font: {
+          size: 16,
+          weight: 'bold' as const
+        }
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Messages Sent'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time'
+        }
       }
     }
   }), []);
 
-  // Loading state
+  // Loading state with better UX
   if (isLoading) {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="rounded-lg bg-white p-6 shadow animate-pulse">
-              <div className="h-12 w-12 bg-gray-200 rounded"></div>
-              <div className="mt-4 h-4 bg-gray-200 rounded w-24"></div>
-              <div className="mt-2 h-8 bg-gray-200 rounded w-32"></div>
-            </div>
-          ))}
+          <LoadingSkeleton type="stat" count={4} />
         </div>
+        <LoadingSkeleton type="card" count={2} />
       </div>
     );
   }
@@ -165,7 +179,15 @@ const Dashboard: React.FC = () => {
 
       {/* Chart */}
       <div className="rounded-lg bg-white p-6 shadow">
-        <Line options={chartOptions} data={chartData} />
+        <div className="h-96">
+          {chartLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-gray-500">Loading chart data...</div>
+            </div>
+          ) : (
+            <Line options={chartOptions} data={chartData} />
+          )}
+        </div>
       </div>
 
       {/* Server Status */}
