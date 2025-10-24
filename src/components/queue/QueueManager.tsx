@@ -5,6 +5,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
 import { QueueTable } from './QueueTable';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
+import { generateSafeCSV } from '../../utils/csvSanitizer';
 import type { QueueFilter, QueueItem } from '../../types/queue';
 
 const QueueManager: React.FC = () => {
@@ -34,7 +35,7 @@ const QueueManager: React.FC = () => {
     try {
       await updateStatus.mutateAsync({ id, status });
       toast.success(`Status updated to ${status}`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to update status. Please try again.');
     }
   };
@@ -45,31 +46,36 @@ const QueueManager: React.FC = () => {
       return;
     }
 
-    // Create CSV export
-    const headers = ['Customer', 'Email', 'Recipient', 'Sender', 'Status', 'Service Type', 'Created'];
-    const rows = queueItems.map(item => [
-      item.customerName,
-      item.customerEmail,
-      item.recipient,
-      item.sender,
-      item.status,
-      item.serviceType,
-      item.createdAt,
-    ]);
+    try {
+      // Create CSV export with sanitization
+      const headers = ['Customer', 'Email', 'Recipient', 'Sender', 'Status', 'Service Type', 'Created'];
+      const rows = queueItems.map(item => [
+        item.customerName,
+        item.customerEmail,
+        item.recipient,
+        item.sender,
+        item.status,
+        item.serviceType,
+        item.createdAt,
+      ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
+      // Use safe CSV generation to prevent injection attacks
+      const csvContent = generateSafeCSV(headers, rows);
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `queue-export-${new Date().toISOString()}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success('Queue data exported successfully');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `queue-export-${new Date().toISOString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success('Queue data exported successfully');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export data. Please try again.');
+    }
   };
 
   if (queueError) {

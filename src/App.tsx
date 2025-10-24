@@ -6,6 +6,11 @@ import Dashboard from './components/Dashboard';
 import QueueManager from './components/queue/QueueManager';
 import ConfigEditor from './components/config/ConfigEditor';
 import ErrorBoundary from './components/ErrorBoundary';
+import AdvancedAnalytics from './components/analytics/AdvancedAnalytics';
+import HealthCheck from './components/health/HealthCheck';
+import LoginPage from './components/auth/LoginPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import SecurityPage from './components/security/SecurityPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,7 +18,7 @@ const queryClient = new QueryClient({
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       staleTime: 5000,
-      cacheTime: 300000,
+      gcTime: 300000, // Updated from deprecated cacheTime
       refetchOnWindowFocus: false,
     },
   },
@@ -25,12 +30,21 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout />}>
+            {/* Public Routes */}
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* Protected Routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
               <Route index element={<Dashboard />} />
               <Route path="queue" element={<QueueManager />} />
               <Route path="config" element={<ConfigEditor />} />
-              <Route path="security" element={<div>Security (Coming Soon)</div>} />
-              <Route path="analytics" element={<div>Analytics (Coming Soon)</div>} />
+              <Route path="security" element={<SecurityPage />} />
+              <Route path="analytics" element={<AdvancedAnalytics />} />
+              <Route path="health" element={<HealthCheck />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

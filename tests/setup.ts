@@ -30,16 +30,26 @@ global.IntersectionObserver = class IntersectionObserver {
   takeRecords() {
     return [];
   }
-  unobserve() {}
-} as any;
+  unobserve() {
+    // Mock unobserve
+  }
+};
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-} as any;
+  constructor() {
+    // Mock constructor
+  }
+  disconnect() {
+    // Mock disconnect
+  }
+  observe() {
+    // Mock observe
+  }
+  unobserve() {
+    // Mock unobserve
+  }
+};
 
 // Mock console methods to reduce noise in tests
 global.console = {

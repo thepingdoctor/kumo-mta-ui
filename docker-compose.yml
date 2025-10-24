@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # KumoMTA UI Frontend
+  kumomta-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kumomta-ui
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - kumomta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # KumoMTA Backend (placeholder - configure with your actual backend)
+  kumomta-backend:
+    image: kumomta/kumomta:latest # Replace with actual image
+    container_name: kumomta-backend
+    ports:
+      - "8000:8000"
+    networks:
+      - kumomta-network
+    restart: unless-stopped
+    volumes:
+      - kumomta-data:/var/spool/kumomta
+      - kumomta-logs:/var/log/kumomta
+    environment:
+      - KUMOMTA_CONFIG=/etc/kumomta/config.toml
+
+networks:
+  kumomta-network:
+    driver: bridge
+
+volumes:
+  kumomta-data:
+  kumomta-logs:

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Mail, Settings, Shield, BarChart3, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -8,6 +8,7 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const logout = useAuthStore((state) => state.logout);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   const navigation = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -18,6 +19,59 @@ const Layout: React.FC = () => {
   ];
 
   const closeSidebar = () => setSidebarOpen(false);
+
+  // Keyboard navigation support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Close sidebar on Escape key
+      if (e.key === 'Escape' && sidebarOpen) {
+        closeSidebar();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [sidebarOpen]);
+
+  // Focus trap for mobile sidebar
+  useEffect(() => {
+    if (!sidebarOpen || !sidebarRef.current) return;
+
+    const sidebar = sidebarRef.current;
+    const focusableElements = sidebar.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    sidebar.addEventListener('keydown', handleTabKey as EventListener);
+    firstElement.focus(); // Focus first element when sidebar opens
+
+    return () => {
+      sidebar.removeEventListener('keydown', handleTabKey as EventListener);
+    };
+  }, [sidebarOpen]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -33,9 +87,12 @@ const Layout: React.FC = () => {
 
         {/* Sidebar */}
         <aside
+          ref={sidebarRef}
           className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+          role="navigation"
+          aria-label="Main navigation"
         >
           <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
             <h1 className="text-xl font-bold text-gray-900">KumoMTA Admin</h1>
@@ -47,7 +104,7 @@ const Layout: React.FC = () => {
               <X className="h-6 w-6" />
             </button>
           </div>
-          <nav className="mt-6" role="navigation" aria-label="Main navigation">
+          <nav className="mt-6">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;

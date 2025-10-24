@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { render } from '../utils/test-utils';
@@ -73,7 +73,8 @@ describe('Layout Component', () => {
         token: 'mock-token',
         login: vi.fn(),
         logout: logoutMock,
-      } as any);
+        isAuthenticated: true,
+      });
 
       render(<Layout />);
 

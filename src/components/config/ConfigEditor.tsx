@@ -17,12 +17,38 @@ const ConfigEditor: React.FC = () => {
 
   const onSubmit = async (data: ConfigValues) => {
     try {
-      // TODO: Implement API call to save configuration
-      console.log('Saving configuration:', data);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Split configuration data into separate categories
+      const coreConfig: Partial<CoreConfig> = {
+        maxConcurrentDeliveries: data.maxConcurrentDeliveries,
+        messageRetention: data.messageRetention,
+        defaultDomain: data.defaultDomain,
+      };
+
+      const integrationConfig: Partial<IntegrationConfig> = {
+        webhookUrl: data.webhookUrl,
+        apiKey: data.apiKey,
+      };
+
+      const performanceConfig: Partial<PerformanceConfig> = {
+        connectionPoolSize: data.connectionPoolSize,
+        maxRetries: data.maxRetries,
+      };
+
+      // Make API calls to save each configuration section
+      const { apiService } = await import('../../services/api');
+
+      await Promise.all([
+        Object.keys(coreConfig).length > 0 ? apiService.config.updateCore(coreConfig as CoreConfig) : Promise.resolve(),
+        Object.keys(integrationConfig).length > 0 ? apiService.config.updateIntegration(integrationConfig as IntegrationConfig) : Promise.resolve(),
+        Object.keys(performanceConfig).length > 0 ? apiService.config.updatePerformance(performanceConfig as PerformanceConfig) : Promise.resolve(),
+      ]);
+
+      // Success notification would go here
+      console.log('Configuration saved successfully');
     } catch (error) {
-      console.error('Failed to save configuration:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Failed to save configuration:', errorMessage, error);
+      throw error; // Re-throw to trigger form error state
     }
   };
 

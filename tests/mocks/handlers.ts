@@ -58,14 +58,12 @@ export const handlers = [
   }),
 
   // Rebind messages
-  http.post(`${baseURL}/api/admin/rebind/v1`, async ({ request }) => {
-    const body = await request.json();
+  http.post(`${baseURL}/api/admin/rebind/v1`, async () => {
     return HttpResponse.json({ success: true, rebounded: 150 });
   }),
 
   // Bounce messages
-  http.post(`${baseURL}/api/admin/bounce/v1`, async ({ request }) => {
-    const body = await request.json();
+  http.post(`${baseURL}/api/admin/bounce/v1`, async () => {
     return HttpResponse.json({ success: true, bounced: 75 });
   }),
 
@@ -76,6 +74,30 @@ export const handlers = [
         { timestamp: '2024-01-01T12:00:00Z', level: 'INFO', message: 'SMTP connection established' },
         { timestamp: '2024-01-01T12:01:00Z', level: 'DEBUG', message: 'Message received' },
       ],
+    });
+  }),
+
+  // Set diagnostic log filter
+  http.post(`${baseURL}/api/admin/set-diagnostic-log-filter/v1`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({ success: true, filter: body.filter, duration: body.duration });
+  }),
+
+  // Suspend ready queue
+  http.post(`${baseURL}/api/admin/suspend-ready-q/v1`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({ success: true, domain: body.domain, reason: body.reason });
+  }),
+
+  // KumoMTA Prometheus metrics endpoint
+  http.get(`${baseURL}/metrics.json`, () => {
+    return HttpResponse.json({
+      kumomta_connection_count: { service: 'smtp', value: 42 },
+      kumomta_messages_sent_total: { value: 12450 },
+      kumomta_bounce_total: { value: 125 },
+      kumomta_delayed_total: { value: 45 },
+      kumomta_throughput: { value: 350 },
+      kumomta_active_connections: { value: 28 },
     });
   }),
 

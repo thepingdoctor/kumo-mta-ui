@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAuthToken } from '../utils/auth';
+import { useAuthStore } from '../store/authStore';
 import type { QueueItem, QueueFilter, QueueMetrics } from '../types/queue';
 import type { CoreConfig, IntegrationConfig, PerformanceConfig } from '../types/config';
 
@@ -9,15 +9,27 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Enable CSRF protection
 });
 
-// Add auth token to requests
+// Add auth token to requests - HTTP Basic Auth for KumoMTA compatibility
 api.interceptors.request.use(
   config => {
-    const token = getAuthToken();
+    const authState = useAuthStore.getState();
+    const token = authState.token;
+
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // KumoMTA expects HTTP Basic Auth, not Bearer token
+      // Format: username:password encoded in base64
+      config.headers.Authorization = `Basic ${token}`;
     }
+
+    // Add CSRF token if available
+    const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
+
     return config;
   },
   error => {
@@ -34,7 +46,6 @@ api.interceptors.response.use(
       const status = error.response.status;
       if (status === 401) {
         // Handle unauthorized - clear auth and redirect
-        const { useAuthStore } = await import('../store/authStore');
         useAuthStore.getState().logout();
         window.location.href = '/login';
       } else if (status === 403) {
@@ -70,9 +81,9 @@ export const apiService = {
 
   // KumoMTA-specific endpoints
   kumomta: {
-    // Get server metrics
+    // Get server metrics - KumoMTA uses /metrics.json (Prometheus format)
     getMetrics: () =>
-      api.get('/api/admin/metrics/v1'),
+      api.get('/metrics.json'),
 
     // Get bounce classifications
     getBounces: () =>

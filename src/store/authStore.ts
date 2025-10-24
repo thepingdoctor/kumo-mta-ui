@@ -19,16 +19,15 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       login: (user, token) => {
         set({ user, token, isAuthenticated: true });
-        // Store token in localStorage for API interceptor
-        localStorage.setItem('auth_token', token);
+        // Token is persisted via Zustand middleware - no need for duplicate localStorage
       },
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
-        localStorage.removeItem('auth_token');
+        // Zustand persist middleware handles removal
       },
       refreshToken: (newToken) => {
         set({ token: newToken });
-        localStorage.setItem('auth_token', newToken);
+        // Zustand persist middleware handles update
       },
     }),
     {

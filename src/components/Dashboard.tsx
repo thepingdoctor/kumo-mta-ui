@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import { useChartData } from '../hooks/useChartData';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
+import { parsePrometheusMetrics } from '../utils/prometheusParser';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,14 +30,15 @@ ChartJS.register(
 );
 
 const Dashboard: React.FC = () => {
-  // Fetch real metrics from KumoMTA
+  // Fetch real metrics from KumoMTA (Prometheus format)
   const { data: kumoMetrics, isLoading, error } = useQuery({
     queryKey: ['kumo-metrics'],
     queryFn: async () => {
       const response = await apiService.kumomta.getMetrics();
-      return response.data;
+      // Parse Prometheus JSON format to standard metrics
+      return parsePrometheusMetrics(response.data);
     },
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 15000, // Refresh every 15 seconds (optimized from 5s)
     retry: 3,
   });
 
@@ -46,7 +48,7 @@ const Dashboard: React.FC = () => {
       const response = await apiService.queue.getMetrics();
       return response.data;
     },
-    refetchInterval: 5000,
+    refetchInterval: 15000, // Optimized from 5s
     retry: 3,
   });
 

@@ -202,7 +202,7 @@ describe('API Service', () => {
         getAuthToken: () => 'mock-token-123',
       }));
 
-      let capturedHeaders: any;
+      let capturedHeaders: Record<string, string> | undefined;
 
       server.use(
         http.get('http://localhost:8000/api/admin/metrics/v1', ({ request }) => {
@@ -219,7 +219,7 @@ describe('API Service', () => {
     });
 
     it('should set correct content type', async () => {
-      let capturedHeaders: any;
+      let capturedHeaders: Record<string, string> | undefined;
 
       server.use(
         http.get('http://localhost:8000/api/admin/metrics/v1', ({ request }) => {
