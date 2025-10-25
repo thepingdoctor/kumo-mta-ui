@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Search, Filter, Download, RefreshCw } from 'lucide-react';
+import { Search, Filter, RefreshCw } from 'lucide-react';
 import { useQueue } from '../../hooks/useQueue';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
 import { QueueTable } from './QueueTable';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
-import { generateSafeCSV } from '../../utils/csvSanitizer';
+import { ExportButton } from '../common/ExportButton';
+import { exportQueueToPDF, exportToCSV } from '../../utils/exportUtils';
 import type { QueueFilter, QueueItem } from '../../types/queue';
+import type { ExportFormat } from '../common/ExportButton';
 
 const QueueManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,38 +42,29 @@ const QueueManager: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = (format: ExportFormat) => {
     if (!queueItems || queueItems.length === 0) {
       toast.warning('No data to export');
       return;
     }
 
     try {
-      // Create CSV export with sanitization
-      const headers = ['Customer', 'Email', 'Recipient', 'Sender', 'Status', 'Service Type', 'Created'];
-      const rows = queueItems.map(item => [
-        item.customerName,
-        item.customerEmail,
-        item.recipient,
-        item.sender,
-        item.status,
-        item.serviceType,
-        item.createdAt,
-      ]);
-
-      // Use safe CSV generation to prevent injection attacks
-      const csvContent = generateSafeCSV(headers, rows);
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `queue-export-${new Date().toISOString()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      toast.success('Queue data exported successfully');
+      if (format === 'pdf') {
+        exportQueueToPDF(queueItems);
+        toast.success('Queue data exported to PDF successfully');
+      } else {
+        const columns = [
+          { header: 'Customer', dataKey: 'customerName' },
+          { header: 'Email', dataKey: 'customerEmail' },
+          { header: 'Recipient', dataKey: 'recipient' },
+          { header: 'Sender', dataKey: 'sender' },
+          { header: 'Status', dataKey: 'status' },
+          { header: 'Service Type', dataKey: 'serviceType' },
+          { header: 'Created', dataKey: 'createdAt' },
+        ];
+        exportToCSV(queueItems, `queue-export-${Date.now()}.csv`, columns);
+        toast.success('Queue data exported to CSV successfully');
+      }
     } catch (error) {
       console.error('Export failed:', error);
       toast.error('Failed to export data. Please try again.');
@@ -114,15 +107,12 @@ const QueueManager: React.FC = () => {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </button>
-          <button
-            onClick={handleExport}
+          <ExportButton
+            onExport={handleExport}
             disabled={!queueItems || queueItems.length === 0}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Export queue data"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </button>
+            formats={['pdf', 'csv']}
+            label="Export"
+          />
         </div>
       </div>
 

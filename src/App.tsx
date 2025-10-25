@@ -11,6 +11,9 @@ import HealthCheck from './components/health/HealthCheck';
 import LoginPage from './components/auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import SecurityPage from './components/security/SecurityPage';
+import OfflineIndicator from './components/common/OfflineIndicator';
+import PWAInstallPrompt from './components/common/PWAInstallPrompt';
+import UpdatePrompt from './components/common/UpdatePrompt';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +32,11 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
+          {/* PWA Components */}
+          <OfflineIndicator />
+          <PWAInstallPrompt />
+          <UpdatePrompt />
+
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />

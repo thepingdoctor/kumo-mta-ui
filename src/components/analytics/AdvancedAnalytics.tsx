@@ -1,11 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Bar, Pie, Doughnut } from 'react-chartjs-2';
 import { TrendingUp, TrendingDown, Activity, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
+import { ExportButton } from '../common/ExportButton';
+import { exportAnalyticsToPDF, exportToCSV } from '../../utils/exportUtils';
+import type { ExportFormat } from '../common/ExportButton';
 
 const AdvancedAnalytics: React.FC = () => {
+  const bounceChartRef = useRef<any>(null);
+  const queueChartRef = useRef<any>(null);
+  const bounceClassificationChartRef = useRef<any>(null);
+
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['analytics-metrics'],
     queryFn: async () => {
@@ -88,6 +95,58 @@ const AdvancedAnalytics: React.FC = () => {
     };
   }, [metrics]);
 
+  const handleExport = (format: ExportFormat) => {
+    if (!metrics) return;
+
+    try {
+      if (format === 'pdf') {
+        // Get chart images
+        const chartImages: { [key: string]: string } = {};
+
+        if (bounceChartRef.current) {
+          chartImages['Bounce Distribution'] = bounceChartRef.current.toBase64Image();
+        }
+        if (queueChartRef.current) {
+          chartImages['Queue Status'] = queueChartRef.current.toBase64Image();
+        }
+        if (bounceClassificationChartRef.current) {
+          chartImages['Top Bounce Classifications'] = bounceClassificationChartRef.current.toBase64Image();
+        }
+
+        // Calculate metrics for export
+        const exportMetrics = {
+          successRate: successRate,
+          bounces: metrics.bounces,
+          queueEfficiency: metrics.queue
+            ? ((metrics.queue.totalCompleted || 0) /
+                ((metrics.queue.totalCompleted || 0) +
+                  (metrics.queue.totalWaiting || 0) +
+                  (metrics.queue.totalProcessing || 0) || 1)) *
+              100
+            : 0,
+          throughput: metrics.kumomta?.throughput || 0,
+        };
+
+        exportAnalyticsToPDF(exportMetrics, chartImages);
+      } else {
+        // Export bounce classifications to CSV
+        if (metrics.bounces?.classifications) {
+          const totalBounces = (metrics.bounces.hard_bounces || 0) + (metrics.bounces.soft_bounces || 0);
+          const csvData = metrics.bounces.classifications.map((c: any) => ({
+            code: c.code,
+            description: c.description,
+            count: c.count,
+            percentage: ((c.count / totalBounces) * 100).toFixed(2),
+          }));
+
+          exportToCSV(csvData, `analytics-export-${Date.now()}.csv`);
+        }
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -101,11 +160,19 @@ const AdvancedAnalytics: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Advanced Analytics</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Detailed insights into your email delivery performance
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Advanced Analytics</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Detailed insights into your email delivery performance
+          </p>
+        </div>
+        <ExportButton
+          onExport={handleExport}
+          disabled={!metrics}
+          formats={['pdf', 'csv']}
+          label="Export"
+        />
       </div>
 
       {/* KPI Cards */}
@@ -190,6 +257,7 @@ const AdvancedAnalytics: React.FC = () => {
             <h3 className="mb-4 text-lg font-medium text-gray-900">Bounce Distribution</h3>
             <div className="h-64">
               <Pie
+                ref={bounceChartRef}
                 data={bounceChartData}
                 options={{
                   responsive: true,
@@ -211,6 +279,7 @@ const AdvancedAnalytics: React.FC = () => {
             <h3 className="mb-4 text-lg font-medium text-gray-900">Queue Status</h3>
             <div className="h-64">
               <Doughnut
+                ref={queueChartRef}
                 data={queueChartData}
                 options={{
                   responsive: true,
@@ -234,6 +303,7 @@ const AdvancedAnalytics: React.FC = () => {
             </h3>
             <div className="h-64">
               <Bar
+                ref={bounceClassificationChartRef}
                 data={bounceClassificationData}
                 options={{
                   responsive: true,

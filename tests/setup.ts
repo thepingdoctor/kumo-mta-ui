@@ -51,6 +51,23 @@ global.ResizeObserver = class ResizeObserver {
   }
 };
 
+// Mock react-window's FixedSizeList for testing
+vi.mock('react-window', () => {
+  const React = require('react');
+  return {
+    FixedSizeList: ({ children, itemData, itemCount }: any) => {
+      // Render all items in test mode (no virtualization)
+      return React.createElement(
+        'div',
+        { 'data-testid': 'virtual-list' },
+        Array.from({ length: itemCount }).map((_, index) =>
+          children({ index, style: {}, data: itemData })
+        )
+      );
+    },
+  };
+});
+
 // Mock console methods to reduce noise in tests
 global.console = {
   ...console,

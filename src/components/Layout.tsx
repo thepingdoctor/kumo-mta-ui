@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Mail, Settings, Shield, BarChart3, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ToastContainer } from './common/ToastContainer';
+import { ThemeToggle } from './common/ThemeToggle';
 
 const Layout: React.FC = () => {
   const location = useLocation();
@@ -74,12 +75,12 @@ const Layout: React.FC = () => {
   }, [sidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg transition-colors">
       <div className="flex h-screen overflow-hidden">
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 lg:hidden"
             onClick={closeSidebar}
             aria-hidden="true"
           ></div>
@@ -88,21 +89,24 @@ const Layout: React.FC = () => {
         {/* Sidebar */}
         <aside
           ref={sidebarRef}
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-dark-surface shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           role="navigation"
           aria-label="Main navigation"
         >
-          <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-900">KumoMTA Admin</h1>
-            <button
-              onClick={closeSidebar}
-              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Close sidebar"
-            >
-              <X className="h-6 w-6" />
-            </button>
+          <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-dark-border">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-dark-text">KumoMTA Admin</h1>
+            <div className="flex items-center gap-2">
+              <ThemeToggle variant="dropdown" />
+              <button
+                onClick={closeSidebar}
+                className="lg:hidden p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Close sidebar"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
           </div>
           <nav className="mt-6">
             {navigation.map((item) => {
@@ -115,8 +119,8 @@ const Layout: React.FC = () => {
                   onClick={closeSidebar}
                   className={`flex items-center px-6 py-3 text-sm transition-colors ${
                     isActive
-                      ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent'
+                      ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-l-4 border-blue-600'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border-l-4 border-transparent'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
@@ -130,7 +134,7 @@ const Layout: React.FC = () => {
                 logout();
                 closeSidebar();
               }}
-              className="flex w-full items-center px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent transition-colors"
+              className="flex w-full items-center px-6 py-3 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border-l-4 border-transparent transition-colors"
             >
               <LogOut className="mr-3 h-5 w-5" aria-hidden="true" />
               Logout
@@ -141,19 +145,22 @@ const Layout: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Mobile header */}
-          <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Open sidebar"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <h1 className="ml-4 text-lg font-semibold text-gray-900">KumoMTA Admin</h1>
+          <header className="lg:hidden bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Open sidebar"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              <h1 className="ml-4 text-lg font-semibold text-gray-900 dark:text-dark-text">KumoMTA Admin</h1>
+            </div>
+            <ThemeToggle variant="button" />
           </header>
 
           {/* Scrollable content area */}
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg">
             <div className="p-4 sm:p-6 lg:p-8">
               <Outlet />
             </div>

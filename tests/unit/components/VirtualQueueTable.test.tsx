@@ -67,12 +67,14 @@ describe('VirtualQueueTable', () => {
 
   it('should render virtual list with items', () => {
     const onStatusChange = vi.fn();
-    const { container } = render(<VirtualQueueTable items={mockQueueItems} onStatusChange={onStatusChange} isLoading={false} />);
+    render(<VirtualQueueTable items={mockQueueItems} onStatusChange={onStatusChange} isLoading={false} />);
 
-    // Virtual list should render - react-window creates a div with specific styling
-    // Check for the presence of customer names which should be in the virtual list
+    // Virtual list should render - check for customer names
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(container.querySelector('[style*="position"]')).toBeInTheDocument();
+    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+
+    // Check for the virtual list container
+    expect(screen.getByTestId('virtual-list')).toBeInTheDocument();
   });
 
   it('should show loading state', () => {

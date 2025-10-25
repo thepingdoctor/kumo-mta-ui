@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Globe, AlertTriangle, CheckCircle, Plus, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { ExportButton } from '../common/ExportButton';
+import { exportSecurityAuditToPDF } from '../../utils/exportUtils';
+import type { ExportFormat } from '../common/ExportButton';
 
 interface TLSConfig {
   enabled: boolean;
@@ -72,6 +75,14 @@ const SecurityPage: React.FC = () => {
     setIPRules(ipRules.filter(rule => rule.id !== id));
   };
 
+  const handleExport = (format: ExportFormat) => {
+    if (format === 'pdf') {
+      const tlsConfig = tlsForm.getValues();
+      const dkimConfig = dkimForm.getValues();
+      exportSecurityAuditToPDF(tlsConfig, dkimConfig, ipRules);
+    }
+  };
+
   const tabs = [
     { id: 'tls', label: 'TLS/SSL', icon: Lock },
     { id: 'dkim', label: 'DKIM/SPF', icon: Shield },
@@ -82,11 +93,19 @@ const SecurityPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Security Settings</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Configure security settings for your KumoMTA server
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Security Settings</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Configure security settings for your KumoMTA server
+          </p>
+        </div>
+        <ExportButton
+          onExport={handleExport}
+          formats={['pdf']}
+          label="Export Audit"
+          showDropdown={false}
+        />
       </div>
 
       {/* Tabs */}

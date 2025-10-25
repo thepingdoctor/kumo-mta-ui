@@ -1,7 +1,10 @@
+import { UserRole } from './roles';
+
 export interface User {
   id: string;
   email: string;
-  role: 'admin' | 'operator' | 'viewer';
+  name?: string;
+  role: UserRole;
 }
 
 export interface EmailMetrics {

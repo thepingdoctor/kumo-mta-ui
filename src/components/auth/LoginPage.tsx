@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '../../store/authStore';
-import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
+import { UserRole } from '../../types/roles';
+import { Mail, Lock, LogIn, AlertCircle, UserCog } from 'lucide-react';
 
 interface LoginFormData {
   email: string;
   password: string;
+  role: UserRole;
   rememberMe: boolean;
 }
 
@@ -24,6 +26,7 @@ const LoginPage: React.FC = () => {
     defaultValues: {
       email: '',
       password: '',
+      role: 'admin',
       rememberMe: false,
     },
   });
@@ -44,6 +47,7 @@ const LoginPage: React.FC = () => {
         id: '1',
         email: data.email,
         name: data.email.split('@')[0],
+        role: data.role,
       };
 
       login(user, token);
@@ -56,20 +60,20 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors">
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">KumoMTA Admin</h1>
-          <p className="text-gray-600">Sign in to manage your email infrastructure</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">KumoMTA Admin</h1>
+          <p className="text-gray-600 dark:text-gray-300">Sign in to manage your email infrastructure</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-xl p-8">
+        <div className="bg-white dark:bg-dark-surface rounded-lg shadow-xl p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Error Alert */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg flex items-start">
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
                 <span className="text-sm">{error}</span>
               </div>
@@ -77,12 +81,12 @@ const LoginPage: React.FC = () => {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   {...register('email', {
@@ -95,25 +99,25 @@ const LoginPage: React.FC = () => {
                   type="email"
                   id="email"
                   className={`block w-full pl-10 pr-3 py-2 border ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                  } rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                   placeholder="admin@example.com"
                   disabled={isLoading}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   {...register('password', {
@@ -126,14 +130,38 @@ const LoginPage: React.FC = () => {
                   type="password"
                   id="password"
                   className={`block w-full pl-10 pr-3 py-2 border ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    errors.password ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                  } rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Role Selection */}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="flex items-center gap-2">
+                  <UserCog className="h-4 w-4" />
+                  <span>Login As</span>
+                </div>
+              </label>
+              <select
+                {...register('role', { required: 'Please select a role' })}
+                id="role"
+                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isLoading}
+              >
+                <option value="admin">Administrator - Full Access</option>
+                <option value="operator">Operator - Queue Management</option>
+                <option value="viewer">Viewer - Read Only</option>
+                <option value="auditor">Auditor - Security & Logs</option>
+              </select>
+              {errors.role && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.role.message}</p>
               )}
             </div>
 
@@ -144,15 +172,15 @@ const LoginPage: React.FC = () => {
                   {...register('rememberMe')}
                   id="rememberMe"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
                   disabled={isLoading}
                 />
-                <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                   Remember me
                 </label>
               </div>
 
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-500">
+              <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">
                 Forgot password?
               </a>
             </div>
@@ -182,15 +210,16 @@ const LoginPage: React.FC = () => {
 
           {/* Footer */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Protected by HTTP Basic Authentication
             </p>
           </div>
         </div>
 
         {/* Help Text */}
-        <div className="mt-4 text-center text-sm text-gray-600">
+        <div className="mt-4 space-y-2 text-center text-sm text-gray-600 dark:text-gray-400">
           <p>Default credentials: admin@example.com / password123</p>
+          <p>Select a role to test different permission levels</p>
         </div>
       </div>
     </div>
