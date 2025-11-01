@@ -14,6 +14,15 @@ export interface EmailMetrics {
   throughput: number;
 }
 
+/**
+ * @deprecated Hybrid queue model (mixing customer service + email MTA fields)
+ *
+ * This duplicate QueueItem definition in index.ts is deprecated.
+ * Use the official definition from './queue' for legacy code,
+ * or MessageQueueItem from './email-queue' for new email queue features.
+ *
+ * This interface will be removed in v3.0
+ */
 export interface QueueItem {
   id: string;
   customerId: string;
@@ -34,6 +43,27 @@ export interface QueueItem {
   updatedAt: string;
   notificationsSent: NotificationRecord[];
 }
+
+// Export new email queue types for KumoMTA integration
+export type {
+  MessageQueueItem,
+  MessageQueueStatus,
+  QueueState,
+  BounceType,
+  SmtpResponse,
+  EmailQueueMetrics,
+  DomainMetric,
+  EmailQueueFilter,
+  QueueOperationResult,
+} from './email-queue';
+
+// Export adapter utilities for backward compatibility
+export {
+  legacyToEmailQueue,
+  emailQueueToLegacy,
+  batchLegacyToEmailQueue,
+  batchEmailQueueToLegacy,
+} from '../adapters/queue-adapter';
 
 export interface NotificationRecord {
   id: string;

@@ -1,3 +1,14 @@
+/**
+ * @deprecated Legacy customer service queue model
+ *
+ * This interface is deprecated and maintained only for backward compatibility.
+ * New code should use MessageQueueItem from './email-queue'
+ *
+ * Migration: Use the adapter in src/adapters/queue-adapter.ts to convert
+ * between legacy and email queue formats.
+ *
+ * Will be removed in v3.0
+ */
 export interface QueueItem {
   id: string;
   customerId: string;
