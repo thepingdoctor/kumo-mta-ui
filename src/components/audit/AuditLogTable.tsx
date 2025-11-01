@@ -3,7 +3,7 @@
  * High-performance table with virtual scrolling for large audit logs
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { AuditEvent } from '../../types/audit';
 import { AuditSeverity, AuditEventCategory } from '../../types/audit';
 
@@ -20,10 +20,7 @@ interface AuditLogTableProps {
 const AuditLogTable: React.FC<AuditLogTableProps> = ({
   events,
   onEventClick,
-  currentPage,
   pageSize,
-  totalPages,
-  onPageChange,
   onPageSizeChange,
 }) => {
   const getSeverityColor = (severity: AuditSeverity): string => {

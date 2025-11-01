@@ -2,8 +2,8 @@
  * Comprehensive Test Suite for Audit Logging System
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { useAuditStore } from '../stores/auditStore';
 import { auditService } from '../services/auditService';
@@ -12,9 +12,7 @@ import {
   auditConfig,
   auditQueue,
   auditSecurity,
-  auditUser,
 } from '../components/audit/auditIntegration';
-import AuditLogViewer from '../components/audit/AuditLogViewer';
 import AuditLogTable from '../components/audit/AuditLogTable';
 import AuditLogFilters from '../components/audit/AuditLogFilters';
 import AuditEventDetails from '../components/audit/AuditEventDetails';
@@ -538,7 +536,7 @@ describe('Performance Tests', () => {
 describe('Integration Tests', () => {
   it('should integrate audit logging into login flow', async () => {
     const username = 'test@example.com';
-    const password = 'password123';
+    // password not needed for audit logging test
 
     // Simulate successful login
     await auditAuth.login(username, true, {

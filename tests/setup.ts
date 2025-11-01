@@ -52,10 +52,17 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 // Mock react-window's FixedSizeList for testing
-vi.mock('react-window', () => {
-  const React = require('react');
+vi.mock('react-window', async () => {
+  const React = await import('react');
+
+  interface FixedSizeListProps {
+    children: (props: { index: number; style: Record<string, unknown>; data: unknown }) => React.ReactNode;
+    itemData: unknown;
+    itemCount: number;
+  }
+
   return {
-    FixedSizeList: ({ children, itemData, itemCount }: any) => {
+    FixedSizeList: ({ children, itemData, itemCount }: FixedSizeListProps) => {
       // Render all items in test mode (no virtualization)
       return React.createElement(
         'div',

@@ -12,7 +12,7 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 };
 
 describe('ErrorBoundary Component', () => {
-  let consoleErrorSpy: any;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   // Suppress console errors in tests
   beforeEach(() => {

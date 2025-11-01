@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { offlineStorage, PendingRequest } from '../utils/offlineStorage';
+import { offlineStorage } from '../utils/offlineStorage';
 
 interface SyncStatus {
   isSyncing: boolean;

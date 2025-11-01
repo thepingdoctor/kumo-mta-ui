@@ -38,10 +38,10 @@ vi.mock('jspdf-autotable', () => ({
 // Mock papaparse
 vi.mock('papaparse', () => ({
   default: {
-    unparse: vi.fn((data) => {
+    unparse: vi.fn((data: Record<string, unknown>[]) => {
       // Simple CSV generation mock
       const headers = Object.keys(data[0] || {}).join(',');
-      const rows = data.map((row: any) => Object.values(row).join(',')).join('\n');
+      const rows = data.map((row) => Object.values(row).join(',')).join('\n');
       return `${headers}\n${rows}`;
     }),
   },
@@ -55,14 +55,16 @@ describe('exportUtils', () => {
     global.URL.revokeObjectURL = vi.fn();
 
     // Mock document methods
-    document.createElement = vi.fn((tag) => {
+    document.createElement = vi.fn(() => {
       const element = {
         href: '',
         download: '',
         style: { visibility: '' },
         click: vi.fn(),
+        setAttribute: vi.fn(),
+        getAttribute: vi.fn(),
       };
-      return element as any;
+      return element as unknown as HTMLElement;
     });
     document.body.appendChild = vi.fn();
     document.body.removeChild = vi.fn();

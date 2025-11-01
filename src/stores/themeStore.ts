@@ -105,8 +105,8 @@ if (typeof document !== 'undefined') {
     try {
       const parsed = JSON.parse(storedTheme);
       theme = parsed.state?.theme || 'system';
-    } catch (e) {
-      // Ignore parse errors
+    } catch {
+      // Ignore parse errors, use default 'system' theme
     }
   }
 

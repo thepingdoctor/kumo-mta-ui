@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import type { AuditLogFilter } from '../../types/audit';
-import { AuditEventCategory, AuditSeverity, AuditAction } from '../../types/audit';
+import { AuditEventCategory, AuditSeverity } from '../../types/audit';
 
 interface AuditLogFiltersProps {
   onFilterChange: (filters: Partial<AuditLogFilter>) => void;
@@ -20,7 +20,6 @@ const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   const [endDate, setEndDate] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<AuditEventCategory[]>([]);
   const [selectedSeverities, setSelectedSeverities] = useState<AuditSeverity[]>([]);
-  const [selectedActions, setSelectedActions] = useState<AuditAction[]>([]);
   const [successFilter, setSuccessFilter] = useState<boolean | undefined>(undefined);
 
   const handleCategoryToggle = (category: AuditEventCategory) => {
@@ -60,7 +59,6 @@ const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
     setEndDate('');
     setSelectedCategories([]);
     setSelectedSeverities([]);
-    setSelectedActions([]);
     setSuccessFilter(undefined);
     onClearFilters();
   };

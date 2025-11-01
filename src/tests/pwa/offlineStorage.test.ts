@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { offlineStorage } from '../../utils/offlineStorage';
 
 // Mock IndexedDB

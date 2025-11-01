@@ -17,7 +17,7 @@ import {
   requirePermission,
   PermissionError,
 } from '../../utils/permissions';
-import { Permission, UserRole } from '../../types/roles';
+import { Permission } from '../../types/roles';
 import { User } from '../../types';
 
 // Mock users

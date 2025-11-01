@@ -110,12 +110,15 @@ describe('useThemeStore', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
 
-  it('should persist theme to localStorage', () => {
+  it('should persist theme to localStorage', async () => {
     const { result } = renderHook(() => useThemeStore());
 
     act(() => {
       result.current.setTheme('dark');
     });
+
+    // Wait for Zustand persist to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     const stored = localStorageMock.getItem('kumomta-theme-storage');
     expect(stored).toBeTruthy();

@@ -8,10 +8,15 @@ import { ExportButton } from '../common/ExportButton';
 import { exportAnalyticsToPDF, exportToCSV } from '../../utils/exportUtils';
 import type { ExportFormat } from '../common/ExportButton';
 
+// Define Chart type for proper typing
+interface ChartInstance {
+  toBase64Image: () => string;
+}
+
 const AdvancedAnalytics: React.FC = () => {
-  const bounceChartRef = useRef<any>(null);
-  const queueChartRef = useRef<any>(null);
-  const bounceClassificationChartRef = useRef<any>(null);
+  const bounceChartRef = useRef<ChartInstance | null>(null);
+  const queueChartRef = useRef<ChartInstance | null>(null);
+  const bounceClassificationChartRef = useRef<ChartInstance | null>(null);
 
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['analytics-metrics'],
@@ -132,7 +137,7 @@ const AdvancedAnalytics: React.FC = () => {
         // Export bounce classifications to CSV
         if (metrics.bounces?.classifications) {
           const totalBounces = (metrics.bounces.hard_bounces || 0) + (metrics.bounces.soft_bounces || 0);
-          const csvData = metrics.bounces.classifications.map((c: any) => ({
+          const csvData = metrics.bounces.classifications.map((c: { code: string; description: string; count: number }) => ({
             code: c.code,
             description: c.description,
             count: c.count,

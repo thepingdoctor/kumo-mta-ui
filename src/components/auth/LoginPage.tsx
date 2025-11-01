@@ -218,8 +218,8 @@ const LoginPage: React.FC = () => {
 
         {/* Help Text */}
         <div className="mt-4 space-y-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>Default credentials: admin@example.com / password123</p>
-          <p>Select a role to test different permission levels</p>
+          <p>Enter your credentials to access the dashboard</p>
+          <p>Select a role to match your permission level</p>
         </div>
       </div>
     </div>

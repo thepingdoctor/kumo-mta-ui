@@ -5,8 +5,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useAuditStore } from '../../stores/auditStore';
-import { AuditEventCategory, AuditSeverity, AuditAction } from '../../types/audit';
-import type { AuditEvent, AuditLogFilter } from '../../types/audit';
+import type { AuditLogFilter } from '../../types/audit';
 import AuditLogTable from './AuditLogTable';
 import AuditLogFilters from './AuditLogFilters';
 import AuditEventDetails from './AuditEventDetails';
@@ -17,7 +16,6 @@ type ViewMode = 'table' | 'timeline';
 
 const AuditLogViewer: React.FC = () => {
   const {
-    events,
     filteredEvents,
     selectedEvent,
     stats,

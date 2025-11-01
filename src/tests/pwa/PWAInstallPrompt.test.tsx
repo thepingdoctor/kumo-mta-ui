@@ -2,8 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PWAInstallPrompt } from '../../components/common/PWAInstallPrompt';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 describe('PWAInstallPrompt', () => {
-  let mockDeferredPrompt: any;
+  let mockDeferredPrompt: BeforeInstallPromptEvent;
 
   beforeEach(() => {
     mockDeferredPrompt = {

@@ -49,7 +49,7 @@ describe('useOfflineSync', () => {
 
   it('should sync pending requests when online', async () => {
     const mockResponse = { ok: true, status: 200 };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    (global.fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
 
     // Queue a request first
     await offlineStorage.queueRequest({

@@ -58,17 +58,11 @@ test.describe('Dark Mode E2E Tests', () => {
       const themeToggle = page.getByRole('button', { name: /theme|dark|light|mode/i });
 
       if (await themeToggle.count() > 0) {
-        // Get initial icon
-        const initialIcon = await themeToggle.locator('svg').first().getAttribute('class');
-
-        // Toggle theme
+        // Toggle theme without checking icons (icon changes are internal implementation)
         await themeToggle.click();
         await page.waitForTimeout(300);
 
-        // Icon should change
-        const newIcon = await themeToggle.locator('svg').first().getAttribute('class');
-
-        // Icons might be different or the same element with different class
+        // Verify theme toggle has SVG icon
         expect(await themeToggle.locator('svg').count()).toBeGreaterThan(0);
       }
     });

@@ -28,7 +28,7 @@ export const auditAuth = {
     );
   },
 
-  logout: async (username: string) => {
+  logout: async (_username: string) => {
     await auditService.logEvent(
       AuditEventCategory.AUTH,
       AuditAction.LOGOUT,

@@ -73,7 +73,7 @@ const addPDFMetadata = (doc: jsPDF, metadata: Record<string, string>, startY: nu
  * Export data to PDF with formatted tables
  */
 export const exportToPDF = (
-  data: any[],
+  data: Record<string, unknown>[],
   filename: string,
   columns: TableColumn[],
   options: PDFOptions = {}
@@ -144,16 +144,16 @@ export const exportToPDF = (
  * Export data to CSV format
  */
 export const exportToCSV = (
-  data: any[],
+  data: Record<string, unknown>[],
   filename: string,
   columns?: TableColumn[]
 ): void => {
-  let csvData = data;
+  let csvData: Record<string, unknown>[] = data;
 
   // If columns are specified, transform data to match column structure
   if (columns) {
     csvData = data.map(row => {
-      const transformedRow: Record<string, any> = {};
+      const transformedRow: Record<string, unknown> = {};
       columns.forEach(col => {
         transformedRow[col.header] = row[col.dataKey] || '';
       });
@@ -182,7 +182,15 @@ export const exportToCSV = (
 /**
  * Export queue items to PDF
  */
-export const exportQueueToPDF = (queueItems: any[]): void => {
+interface QueueItem {
+  id: string;
+  domain: string;
+  size: number;
+  age: string;
+  [key: string]: unknown;
+}
+
+export const exportQueueToPDF = (queueItems: QueueItem[]): void => {
   const columns: TableColumn[] = [
     { header: 'Customer', dataKey: 'customerName' },
     { header: 'Email', dataKey: 'customerEmail' },
@@ -212,8 +220,24 @@ export const exportQueueToPDF = (queueItems: any[]): void => {
 /**
  * Export analytics data to PDF with charts
  */
+interface AnalyticsMetrics {
+  successRate: number;
+  bounces?: {
+    hard_bounces?: number;
+    soft_bounces?: number;
+    classifications?: Array<{
+      code: string;
+      description: string;
+      count: number;
+    }>;
+  };
+  queueEfficiency: number;
+  throughput: number;
+  [key: string]: unknown;
+}
+
 export const exportAnalyticsToPDF = (
-  metrics: any,
+  metrics: AnalyticsMetrics,
   chartImages: { [key: string]: string } = {}
 ): void => {
   const doc = new jsPDF({
@@ -241,7 +265,7 @@ export const exportAnalyticsToPDF = (
   const imageWidth = pageWidth - 28; // 14mm margin on each side
   const imageHeight = 80;
 
-  Object.entries(chartImages).forEach(([chartName, imageData], index) => {
+  Object.entries(chartImages).forEach(([chartName, imageData]) => {
     // Add new page if needed
     if (yPos + imageHeight + 20 > doc.internal.pageSize.height - 20) {
       doc.addPage();
@@ -275,7 +299,7 @@ export const exportAnalyticsToPDF = (
     doc.text('Bounce Classifications', 14, yPos);
     yPos += 8;
 
-    const bounceData = metrics.bounces.classifications.map((c: any) => ({
+    const bounceData = metrics.bounces.classifications.map((c) => ({
       code: c.code,
       description: c.description,
       count: c.count,
@@ -285,7 +309,7 @@ export const exportAnalyticsToPDF = (
     autoTable(doc, {
       startY: yPos,
       head: [['Code', 'Description', 'Count', 'Percentage']],
-      body: bounceData.map((b: any) => [b.code, b.description, b.count, b.percentage]),
+      body: bounceData.map((b) => [b.code, b.description, b.count, b.percentage]),
       theme: 'grid',
       styles: {
         fontSize: 9,
@@ -324,9 +348,9 @@ export const exportAnalyticsToPDF = (
  * Export security audit data to PDF
  */
 export const exportSecurityAuditToPDF = (
-  tlsConfig: any,
-  dkimConfig: any,
-  ipRules: any[]
+  tlsConfig: TLSConfig,
+  dkimConfig: DKIMConfig,
+  ipRules: IPRule[]
 ): void => {
   const doc = new jsPDF({
     orientation: 'portrait',

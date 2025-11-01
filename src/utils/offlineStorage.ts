@@ -200,6 +200,7 @@ class OfflineStorage {
 
       request.onsuccess = () => {
         const items = request.result as Array<{ key: string } & PendingRequest>;
+        // Extract pending requests, removing the internal 'key' property
         resolve(items.map(({ key, ...rest }) => rest));
       };
       request.onerror = () => reject(request.error);

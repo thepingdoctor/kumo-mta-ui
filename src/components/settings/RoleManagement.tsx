@@ -14,11 +14,9 @@ import { PermissionDenied } from '../auth/ProtectedAction';
 import {
   Shield,
   Users,
-  Settings,
   Search,
   Edit2,
   Trash2,
-  Plus,
   CheckCircle,
   XCircle,
   Info,

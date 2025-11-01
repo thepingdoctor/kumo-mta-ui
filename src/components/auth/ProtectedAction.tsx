@@ -87,7 +87,7 @@ const ProtectedAction: React.FC<ProtectedActionProps> = ({
       <div className={deniedClassName} title="You don't have permission for this action">
         {React.Children.map(children, child => {
           if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<any>, {
+            return React.cloneElement(child as React.ReactElement<{ disabled?: boolean; 'aria-disabled'?: boolean }>, {
               disabled: true,
               'aria-disabled': true,
             });

@@ -121,13 +121,11 @@ const RoleGuard: React.FC<RoleGuardProps> = ({
   const { user, isAuthenticated } = useAuthStore();
   const location = useLocation();
 
-  // Check if user is authenticated
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // Determine if user has required access
+  // Determine if user has required access - moved before early returns to fix React Hooks rule
   const hasAccess = React.useMemo(() => {
+    // Check if user exists first
+    if (!user) return false;
+
     // Check specific role
     if (role && hasRole(user, role)) {
       return true;
@@ -151,6 +149,11 @@ const RoleGuard: React.FC<RoleGuardProps> = ({
     // No access criteria met
     return false;
   }, [user, role, anyRoles, minimumRole, permission]);
+
+  // Check if user is authenticated
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   // If user has access, render children
   if (hasAccess) {

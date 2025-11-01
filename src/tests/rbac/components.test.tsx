@@ -11,7 +11,7 @@ import { useAuthStore } from '../../store/authStore';
 import ProtectedAction, { PermissionDenied } from '../../components/auth/ProtectedAction';
 import RoleGuard from '../../components/auth/RoleGuard';
 import RoleBadge from '../../components/auth/RoleBadge';
-import { Permission, UserRole } from '../../types/roles';
+import { Permission } from '../../types/roles';
 import { User } from '../../types';
 
 // Mock users
