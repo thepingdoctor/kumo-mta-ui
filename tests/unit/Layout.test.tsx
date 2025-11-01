@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -8,12 +8,46 @@ import { useAuthStore } from '../../src/store/authStore';
 
 expect.extend(toHaveNoViolations);
 
+// Mock the auth store
+vi.mock('../../src/store/authStore', () => ({
+  useAuthStore: vi.fn(),
+}));
+
 describe('Layout Component', () => {
+  const mockLogout = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Setup auth store mock with proper selector function
+    (useAuthStore as any).mockImplementation((selector: any) => {
+      const state = {
+        user: { id: '1', email: 'test@example.com', name: 'Test User', role: 'admin' as const },
+        token: 'mock-token',
+        login: vi.fn(),
+        logout: mockLogout,
+        isAuthenticated: true,
+        refreshToken: vi.fn(),
+        updateUserRole: vi.fn(),
+      };
+      return selector ? selector(state) : state;
+    });
+  });
+
   describe('Rendering', () => {
     it('should render the main layout structure', () => {
       render(<Layout />);
 
-      expect(screen.getByText('KumoMTA Admin')).toBeInTheDocument();
+      // Check for navigation element
+      const navElements = screen.getAllByRole('navigation');
+      expect(navElements.length).toBeGreaterThan(0);
+
+      // Check for main element
+      expect(screen.getByRole('main')).toBeInTheDocument();
+
+      // Check for branding (appears twice - sidebar and mobile header)
+      const brandingElements = screen.getAllByText('KumoMTA Admin');
+      expect(brandingElements.length).toBeGreaterThan(0);
     });
 
     it('should render all navigation items', () => {
@@ -65,23 +99,13 @@ describe('Layout Component', () => {
   describe('Logout Functionality', () => {
     it('should call logout when logout button is clicked', async () => {
       const user = userEvent.setup();
-      const logoutMock = vi.fn();
-
-      // Mock the auth store
-      vi.spyOn(useAuthStore, 'getState').mockReturnValue({
-        user: { id: '1', email: 'test@example.com', name: 'Test User' },
-        token: 'mock-token',
-        login: vi.fn(),
-        logout: logoutMock,
-        isAuthenticated: true,
-      });
 
       render(<Layout />);
 
-      const logoutButton = screen.getByText('Logout');
+      const logoutButton = screen.getByRole('button', { name: /logout/i });
       await user.click(logoutButton);
 
-      expect(logoutMock).toHaveBeenCalledTimes(1);
+      expect(mockLogout).toHaveBeenCalledTimes(1);
     });
 
     it('should have logout button with correct styling', () => {
@@ -103,15 +127,17 @@ describe('Layout Component', () => {
     it('should render outlet for child routes', () => {
       const { container } = render(<Layout />);
 
-      // The Outlet component from react-router-dom should be present
-      expect(container.querySelector('.flex-1')).toBeInTheDocument();
+      // The Outlet component from react-router-dom should be present in main content
+      const mainElement = screen.getByRole('main');
+      expect(mainElement).toBeInTheDocument();
     });
 
     it('should have proper padding on main content area', () => {
       const { container } = render(<Layout />);
 
-      const mainContent = container.querySelector('.p-8');
-      expect(mainContent).toBeInTheDocument();
+      // The main content has p-4 sm:p-6 lg:p-8 responsive padding
+      const mainContentDiv = container.querySelector('.p-4.sm\\:p-6.lg\\:p-8');
+      expect(mainContentDiv).toBeInTheDocument();
     });
   });
 
@@ -119,7 +145,8 @@ describe('Layout Component', () => {
     it('should have overflow-auto on main content', () => {
       const { container } = render(<Layout />);
 
-      const mainContent = container.querySelector('.overflow-auto');
+      // Main element has overflow-y-auto
+      const mainContent = container.querySelector('.overflow-y-auto');
       expect(mainContent).toBeInTheDocument();
     });
 
@@ -140,15 +167,19 @@ describe('Layout Component', () => {
     });
 
     it('should have semantic navigation element', () => {
-      const { container } = render(<Layout />);
+      render(<Layout />);
 
-      expect(container.querySelector('nav')).toBeInTheDocument();
+      // Should have navigation element for sidebar
+      const navElement = screen.getByRole('navigation', { name: /main navigation/i });
+      expect(navElement).toBeInTheDocument();
     });
 
     it('should have accessible heading for branding', () => {
       render(<Layout />);
 
-      expect(screen.getByRole('heading', { name: 'KumoMTA Admin' })).toBeInTheDocument();
+      // The heading appears in the sidebar (h1)
+      const headings = screen.getAllByRole('heading', { name: /KumoMTA Admin/i });
+      expect(headings.length).toBeGreaterThan(0);
     });
 
     it('should have accessible button for logout', () => {

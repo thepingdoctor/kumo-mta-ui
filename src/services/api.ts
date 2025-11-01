@@ -3,7 +3,8 @@ import { useAuthStore } from '../store/authStore';
 import type { QueueItem, QueueFilter, QueueMetrics } from '../types/queue';
 import type { CoreConfig, IntegrationConfig, PerformanceConfig } from '../types/config';
 
-const api = axios.create({
+// Export the axios instance for testing
+export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   timeout: 10000,
   headers: {

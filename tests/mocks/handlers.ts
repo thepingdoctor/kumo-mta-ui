@@ -89,10 +89,10 @@ export const handlers = [
     return HttpResponse.json({ success: true, domain: body.domain, reason: body.reason });
   }),
 
-  // KumoMTA Prometheus metrics endpoint
+  // KumoMTA Prometheus metrics endpoint (matches /metrics.json format)
   http.get(`${baseURL}/metrics.json`, () => {
     return HttpResponse.json({
-      kumomta_connection_count: { service: 'smtp', value: 42 },
+      kumomta_connection_count: { service: 'smtp', value: 28 },
       kumomta_messages_sent_total: { value: 12450 },
       kumomta_bounce_total: { value: 125 },
       kumomta_delayed_total: { value: 45 },

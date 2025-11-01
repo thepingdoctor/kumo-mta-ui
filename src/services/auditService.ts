@@ -16,7 +16,8 @@ import type {
   AuditEventDetails,
 } from '../types/audit';
 
-const api = axios.create({
+// Export axios instance for testing
+export const auditApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   timeout: 30000,
   headers: {
@@ -26,7 +27,7 @@ const api = axios.create({
 });
 
 // Add auth interceptor - use Zustand store for consistency
-api.interceptors.request.use(
+auditApi.interceptors.request.use(
   config => {
     // Get token from Zustand persisted storage
     const authStorage = localStorage.getItem('kumomta-auth-storage');
@@ -82,7 +83,7 @@ export const auditService = {
         sessionId: this.getSessionId(),
       };
 
-      const response = await api.post<AuditEvent>('/api/admin/audit/log', event);
+      const response = await auditApi.post<AuditEvent>('/api/admin/audit/log', event);
       return response.data;
     } catch (error) {
       console.error('Failed to log audit event:', error);
@@ -102,7 +103,7 @@ export const auditService = {
     pageSize: number;
   }> {
     try {
-      const response = await api.get('/api/admin/audit/logs', {
+      const response = await auditApi.get('/api/admin/audit/logs', {
         params: {
           ...filters,
           startDate: filters.startDate ? new Date(filters.startDate).toISOString() : undefined,
@@ -121,7 +122,7 @@ export const auditService = {
    */
   async getAuditStats(filters?: AuditLogFilter): Promise<AuditLogStats> {
     try {
-      const response = await api.get<AuditLogStats>('/api/admin/audit/stats', {
+      const response = await auditApi.get<AuditLogStats>('/api/admin/audit/stats', {
         params: filters,
       });
       return response.data;
@@ -136,7 +137,7 @@ export const auditService = {
    */
   async exportAuditLog(options: AuditLogExportOptions): Promise<Blob> {
     try {
-      const response = await api.post('/api/admin/audit/export', options, {
+      const response = await auditApi.post('/api/admin/audit/export', options, {
         responseType: 'blob',
       });
 
@@ -166,7 +167,7 @@ export const auditService = {
    */
   async getRetentionPolicy(): Promise<AuditRetentionPolicy> {
     try {
-      const response = await api.get<AuditRetentionPolicy>('/api/admin/audit/retention-policy');
+      const response = await auditApi.get<AuditRetentionPolicy>('/api/admin/audit/retention-policy');
       return response.data;
     } catch (error) {
       console.error('Failed to get retention policy:', error);
@@ -179,7 +180,7 @@ export const auditService = {
    */
   async updateRetentionPolicy(policy: AuditRetentionPolicy): Promise<AuditRetentionPolicy> {
     try {
-      const response = await api.put<AuditRetentionPolicy>(
+      const response = await auditApi.put<AuditRetentionPolicy>(
         '/api/admin/audit/retention-policy',
         policy
       );
@@ -198,7 +199,7 @@ export const auditService = {
     filters?: AuditLogFilter
   ): Promise<{ events: AuditEvent[]; total: number }> {
     try {
-      const response = await api.post('/api/admin/audit/search', {
+      const response = await auditApi.post('/api/admin/audit/search', {
         query,
         ...filters,
       });
@@ -214,7 +215,7 @@ export const auditService = {
    */
   async getEventById(eventId: string): Promise<AuditEvent> {
     try {
-      const response = await api.get<AuditEvent>(`/api/admin/audit/events/${eventId}`);
+      const response = await auditApi.get<AuditEvent>(`/api/admin/audit/events/${eventId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to get audit event:', error);
@@ -282,7 +283,7 @@ export const auditService = {
     try {
       const localEvents = JSON.parse(localStorage.getItem('local_audit_events') || '[]');
       if (localEvents.length > 0) {
-        await api.post('/api/admin/audit/bulk-log', { events: localEvents });
+        await auditApi.post('/api/admin/audit/bulk-log', { events: localEvents });
         localStorage.removeItem('local_audit_events');
       }
     } catch (error) {

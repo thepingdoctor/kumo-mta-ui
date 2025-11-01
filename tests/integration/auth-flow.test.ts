@@ -11,22 +11,28 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useAuthStore } from '../../src/store/authStore';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+// Import the actual axios instances used by apiService and auditService
+import { api } from '../../src/services/api';
+import { auditApi } from '../../src/services/auditService';
 
 describe('KumoMTA Authentication Flow Integration Tests', () => {
   let mockAxios: MockAdapter;
+  let mockAuditAxios: MockAdapter;
 
   beforeEach(() => {
     // Clear auth store before each test
     useAuthStore.getState().logout();
 
-    // Setup axios mock
-    mockAxios = new MockAdapter(axios);
+    // Setup axios mocks on the ACTUAL axios instances
+    // This ensures our mocks work with axios.create() instances
+    mockAxios = new MockAdapter(api);
+    mockAuditAxios = new MockAdapter(auditApi);
   });
 
   afterEach(() => {
     mockAxios.restore();
+    mockAuditAxios.restore();
   });
 
   describe('HTTP Basic Auth Token Generation', () => {
@@ -210,32 +216,51 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
 
   describe('Authentication Error Handling', () => {
     it('should handle 401 Unauthorized and redirect to login', async () => {
+      // First, login to set authenticated state
       const token = btoa('admin@example.com:wrongpassword');
       useAuthStore.getState().login(
         { id: '1', email: 'admin@example.com', name: 'Admin', role: 'admin' },
         token
       );
 
-      // Mock 401 response
+      // Verify we're authenticated before the test
+      expect(useAuthStore.getState().isAuthenticated).toBe(true);
+
+      // Mock window.location.href BEFORE making request
+      const originalLocation = window.location;
+      delete (window as any).location;
+      window.location = { href: '' } as any;
+
+      // Import apiService to get the axios instance with interceptors
+      const { apiService } = await import('../../src/services/api');
+
+      // Mock 401 response - do this AFTER import to ensure mock is on correct instance
       mockAxios.onGet('/metrics.json').reply(401, {
         error: 'Unauthorized',
       });
 
-      // Mock window.location.href
-      delete (window as any).location;
-      window.location = { href: '' } as any;
-
-      const { apiService } = await import('../../src/services/api');
-
+      // Make the request and catch the error
+      let errorCaught = false;
       try {
         await apiService.kumomta.getMetrics();
-      } catch (error) {
-        // Expected to fail
+      } catch (error: any) {
+        errorCaught = true;
+        // Verify it's a 401 error
+        expect(error.response?.status).toBe(401);
       }
 
-      // Verify logout was called
+      // Verify request was made and failed
+      expect(errorCaught).toBe(true);
+
+      // Add small delay for interceptor to complete async operations
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify logout was called and redirect happened
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
       expect(window.location.href).toBe('/login');
+
+      // Restore original location
+      window.location = originalLocation;
     });
 
     it('should handle 403 Forbidden with appropriate error', async () => {
@@ -245,7 +270,12 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
         token
       );
 
-      mockAxios.onPost('/api/admin/suspend/v1').reply(403, {
+      // Match the exact endpoint pattern that suspendQueue uses
+      mockAxios.onPost('/api/admin/suspend/v1', {
+        domain: 'example.com',
+        reason: 'test',
+        duration: 300
+      }).reply(403, {
         error: 'Forbidden',
       });
 
@@ -253,7 +283,7 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
 
       await expect(
         apiService.kumomta.suspendQueue('example.com', 'test', 300)
-      ).rejects.toThrow('Access forbidden');
+      ).rejects.toThrow(/Access forbidden/);
     });
 
     it('should handle network errors gracefully', async () => {
@@ -263,13 +293,16 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
         token
       );
 
-      mockAxios.onGet('/metrics.json').networkError();
+      // Use networkErrorOnce() instead of networkError()
+      mockAxios.onGet('/metrics.json').networkErrorOnce();
 
       const { apiService } = await import('../../src/services/api');
 
+      // MockAdapter networkErrorOnce() creates error.message = "Network Error"
+      // which goes to the "else" block in api.ts interceptor
       await expect(
         apiService.kumomta.getMetrics()
-      ).rejects.toThrow('Network error');
+      ).rejects.toThrow(/Request error.*Network Error/);
     });
   });
 
@@ -290,9 +323,9 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
         return [200, {}];
       });
 
-      mockAxios.onPost('/api/admin/audit/log').reply((config) => {
+      mockAuditAxios.onPost('/api/admin/audit/log').reply((config) => {
         authHeaders.push(config.headers?.Authorization || '');
-        return [200, {}];
+        return [200, { id: '1', timestamp: new Date().toISOString() }];
       });
 
       // Import different API clients
@@ -301,6 +334,14 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
 
       // Make requests with different clients
       await apiService.kumomta.getMetrics();
+
+      // auditService needs to fetch IP, mock that too
+      global.fetch = vi.fn(() =>
+        Promise.resolve({
+          json: () => Promise.resolve({ ip: '127.0.0.1' }),
+        } as Response)
+      );
+
       await auditService.logEvent('system', 'login', 'info', {
         message: 'Test login',
       });

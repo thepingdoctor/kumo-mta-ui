@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useWebSocket } from '../../../src/hooks/useWebSocket';
 
+// Track WebSocket instances for testing
+let mockWSInstances: MockWebSocket[] = [];
+
 // Mock WebSocket
 class MockWebSocket {
   url: string;
@@ -18,6 +21,15 @@ class MockWebSocket {
 
   constructor(url: string) {
     this.url = url;
+    mockWSInstances.push(this);
+
+    // Auto-connect immediately when onopen is set
+    // This simulates synchronous connection for testing
+    queueMicrotask(() => {
+      if (this.onopen) {
+        this.simulateOpen();
+      }
+    });
   }
 
   send() {
@@ -51,12 +63,13 @@ global.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 
 describe('useWebSocket', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    // Don't use fake timers - they interfere with React hook updates
+    mockWSInstances = [];
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.useRealTimers();
+    mockWSInstances = [];
   });
 
   it('should initialize with disconnected state', () => {
@@ -70,26 +83,22 @@ describe('useWebSocket', () => {
 
   it('should connect to WebSocket server', async () => {
     const onOpen = vi.fn();
+
     const { result } = renderHook(() =>
       useWebSocket({ url: 'ws://localhost:8080', onOpen })
     );
 
-    // Simulate connection
-    const ws = (global.WebSocket as unknown as typeof MockWebSocket);
-    await act(async () => {
-      if (result.current) {
-        // Access the WebSocket instance and simulate open
-        (ws as unknown as MockWebSocket).simulateOpen?.();
-      }
-    });
-
+    // Wait for connection (auto-triggered by microtask)
     await waitFor(() => {
       expect(result.current.isConnected).toBe(true);
-    });
+    }, { timeout: 2000 });
+
+    expect(onOpen).toHaveBeenCalled();
   });
 
   it('should handle incoming messages', async () => {
     const onMessage = vi.fn();
+
     const { result } = renderHook(() =>
       useWebSocket({ url: 'ws://localhost:8080', onMessage })
     );
@@ -100,16 +109,25 @@ describe('useWebSocket', () => {
       timestamp: new Date().toISOString(),
     };
 
-    // Simulate message
-    await act(async () => {
-      const ws = (global.WebSocket as unknown as MockWebSocket);
-      ws.simulateMessage?.(testMessage);
+    // Wait for connection
+    await waitFor(() => {
+      expect(result.current.isConnected).toBe(true);
+    }, { timeout: 2000 });
+
+    // Get the WebSocket instance created by the hook
+    const wsInstance = mockWSInstances[0];
+
+    // Then simulate message
+    act(() => {
+      if (wsInstance) {
+        wsInstance.simulateMessage(testMessage);
+      }
     });
 
     await waitFor(() => {
       expect(result.current.lastMessage).toEqual(testMessage);
       expect(onMessage).toHaveBeenCalledWith(testMessage);
-    });
+    }, { timeout: 2000 });
   });
 
   it('should send messages when connected', () => {

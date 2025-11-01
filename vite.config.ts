@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 
 // https://vitejs.dev/config/
@@ -115,6 +116,20 @@ export default defineConfig({
         type: 'module',
       },
     }),
+    // Sentry source maps upload plugin
+    // Only runs in production builds when auth token is configured
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      sourcemaps: {
+        assets: './dist/**',
+        filesToDeleteAfterUpload: './dist/**/*.map', // Delete source maps after upload for security
+      },
+      telemetry: false, // Disable telemetry for privacy
+      // Only upload source maps if auth token is provided
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+    }),
   ],
   build: {
     rollupOptions: {
@@ -162,9 +177,13 @@ export default defineConfig({
         pure_funcs: ['console.log', 'console.info'], // Remove specific console methods
       },
     },
-    // Increase chunk size warning limit for large dependencies
-    chunkSizeWarningLimit: 1000,
-    // Enable source maps for debugging (can disable in production)
-    sourcemap: false,
+    // Performance budget enforcement
+    // Warn if any chunk exceeds 250KB (gzipped ~80KB)
+    chunkSizeWarningLimit: 250,
+    // Enable source maps for Sentry error tracking
+    // Source maps are uploaded to Sentry and then deleted for security
+    sourcemap: true,
+    // Report compressed sizes
+    reportCompressedSize: true,
   },
 });

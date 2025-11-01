@@ -87,12 +87,11 @@ const Layout: React.FC = () => {
         )}
 
         {/* Sidebar */}
-        <aside
+        <nav
           ref={sidebarRef}
           className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-dark-surface shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
-          role="navigation"
           aria-label="Main navigation"
         >
           <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200 dark:border-dark-border">
@@ -108,7 +107,7 @@ const Layout: React.FC = () => {
               </button>
             </div>
           </div>
-          <nav className="mt-6">
+          <div className="mt-6">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -139,8 +138,8 @@ const Layout: React.FC = () => {
               <LogOut className="mr-3 h-5 w-5" aria-hidden="true" />
               Logout
             </button>
-          </nav>
-        </aside>
+          </div>
+        </nav>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">

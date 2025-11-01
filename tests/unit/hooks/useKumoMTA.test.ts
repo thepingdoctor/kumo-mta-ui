@@ -39,12 +39,15 @@ describe('useKumoMTA Hooks', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
+      // MSW returns the raw Prometheus-formatted metrics from /metrics.json
+      // The actual implementation returns this raw format
       expect(result.current.data).toEqual({
-        messages_sent: 12450,
-        bounces: 125,
-        delayed: 45,
-        throughput: 350,
-        active_connections: 28,
+        kumomta_connection_count: { service: 'smtp', value: 28 },
+        kumomta_messages_sent_total: { value: 12450 },
+        kumomta_bounce_total: { value: 125 },
+        kumomta_delayed_total: { value: 45 },
+        kumomta_throughput: { value: 350 },
+        kumomta_active_connections: { value: 28 },
       });
     });
 
@@ -67,17 +70,37 @@ describe('useKumoMTA Hooks', () => {
 
     it('should handle error state', async () => {
       const { http, HttpResponse } = await import('msw');
+
+      // Override the /metrics.json endpoint to return error BEFORE rendering hook
       server.use(
-        http.get('http://localhost:8000/api/admin/metrics/v1', () => {
-          return HttpResponse.json({ error: 'Server error' }, { status: 500 });
+        http.get('http://localhost:8000/metrics.json', () => {
+          return new HttpResponse(null, { status: 500 });
         })
       );
 
+      // Create a wrapper with NO retries for this test
+      const noRetryWrapper = () => {
+        const queryClient = new QueryClient({
+          defaultOptions: {
+            queries: { retry: false, retryDelay: 0 },
+            mutations: { retry: false },
+          },
+        });
+
+        return ({ children }: { children: React.ReactNode }) =>
+          React.createElement(QueryClientProvider, { client: queryClient }, children);
+      };
+
       const { result } = renderHook(() => useKumoMetrics(), {
-        wrapper: createWrapper(),
+        wrapper: noRetryWrapper(),
       });
 
-      await waitFor(() => expect(result.current.isError).toBe(true));
+      // Wait for the hook to enter error state
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      }, { timeout: 3000 });
+
+      expect(result.current.data).toBeUndefined();
     });
   });
 

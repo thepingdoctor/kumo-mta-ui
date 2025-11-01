@@ -26,12 +26,35 @@ export default defineConfig({
       branches: 75,
       statements: 80,
     },
-    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
+    // Only include Vitest unit tests (.test.ts files)
+    include: [
+      '**/*.test.{ts,tsx}',
+      'src/**/__tests__/**/*.{ts,tsx}',
+    ],
+    // Exclude Playwright E2E tests (.spec.ts files)
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      // Exclude all Playwright test directories
+      '**/tests/e2e/**',
+      '**/tests/smoke/**',
+      '**/tests/deployment/**',
+      '**/tests/performance/web-vitals.spec.ts',
+      // Exclude all .spec.ts files (Playwright convention)
+      '**/*.spec.{ts,tsx}',
+    ],
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@store': path.resolve(__dirname, './src/store'),
+      '@types': path.resolve(__dirname, './src/types'),
     },
   },
 });

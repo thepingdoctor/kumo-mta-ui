@@ -1,0 +1,315 @@
+name: Deployment Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Pre-deployment validation
+  pre-deployment:
+    name: Pre-Deployment Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Build application
+        run: npm run build
+
+      - name: Validate bundle size
+        run: npm run test:bundle
+
+      - name: Security audit
+        run: npm audit --production --audit-level=high
+        continue-on-error: true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+  # Smoke tests
+  smoke-tests:
+    name: Smoke Tests
+    needs: pre-deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        run: npm run test:smoke
+        env:
+          DEPLOYMENT_URL: http://localhost:5173
+
+      - name: Upload smoke test report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-report
+          path: reports/playwright/
+          retention-days: 7
+
+  # Performance tests
+  performance-tests:
+    name: Performance Tests
+    needs: pre-deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run performance tests
+        run: npm run test:performance
+        env:
+          DEPLOYMENT_URL: http://localhost:5173
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: reports/
+          retention-days: 30
+
+      - name: Comment PR with performance metrics
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('reports/test-results.json')) {
+              const results = JSON.parse(fs.readFileSync('reports/test-results.json', 'utf8'));
+              // Add comment with performance metrics
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '## Performance Test Results\n\nTests completed successfully! Check artifacts for detailed metrics.'
+              });
+            }
+
+  # Deployment validation (staging)
+  staging-deployment:
+    name: Staging Deployment Validation
+    needs: [smoke-tests, performance-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Deploy to staging (simulated)
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your staging deployment command here
+          # e.g., netlify deploy --dir=dist --prod=false
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run deployment validation
+        run: npm run test:deployment:validate
+        env:
+          DEPLOYMENT_URL: ${{ secrets.STAGING_URL }}
+          PREVIOUS_VERSION: ${{ github.event.before }}
+          CURRENT_VERSION: ${{ github.sha }}
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-validation-report
+          path: reports/
+          retention-days: 30
+
+  # Production deployment
+  production-deployment:
+    name: Production Deployment
+    needs: [smoke-tests, performance-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add your production deployment command here
+          # e.g., netlify deploy --dir=dist --prod
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run post-deployment smoke tests
+        run: npm run test:smoke
+        env:
+          DEPLOYMENT_URL: ${{ secrets.PRODUCTION_URL }}
+
+      - name: Run post-deployment performance tests
+        run: npm run test:performance
+        env:
+          DEPLOYMENT_URL: ${{ secrets.PRODUCTION_URL }}
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Production deployment successful!"
+          # Add notification command here (Slack, Discord, etc.)
+
+      - name: Notify deployment failure & rollback
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed! Initiating rollback..."
+          # Add rollback command here
+          # ./scripts/rollback.sh
+
+      - name: Upload production test report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-test-report
+          path: reports/
+          retention-days: 90
+
+  # Performance monitoring (post-deployment)
+  performance-monitoring:
+    name: Performance Monitoring
+    needs: production-deployment
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Monitor performance (15 min)
+        run: |
+          for i in {1..3}; do
+            echo "Performance check $i of 3..."
+            npm run test:web-vitals
+            sleep 300  # 5 minutes
+          done
+        env:
+          DEPLOYMENT_URL: ${{ secrets.PRODUCTION_URL }}
+
+      - name: Upload monitoring report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-monitoring-report
+          path: reports/
+          retention-days: 30

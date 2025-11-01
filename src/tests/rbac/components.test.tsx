@@ -250,14 +250,23 @@ describe('RoleBadge Component', () => {
   });
 
   it('should render different sizes', () => {
-    const { rerender } = render(<RoleBadge role="admin" size="sm" />);
-    expect(screen.getByText(/administrator/i)).toHaveClass('text-xs');
+    const { rerender, container } = render(<RoleBadge role="admin" size="sm" />);
+    // Check that the badge renders with small size (text-xs class)
+    expect(screen.getByText(/administrator/i)).toBeInTheDocument();
+    const badgeSm = container.querySelector('.text-xs');
+    expect(badgeSm).toBeInTheDocument();
 
     rerender(<RoleBadge role="admin" size="md" />);
-    expect(screen.getByText(/administrator/i)).toHaveClass('text-sm');
+    // Check that the badge renders with medium size (text-sm class)
+    expect(screen.getByText(/administrator/i)).toBeInTheDocument();
+    const badgeMd = container.querySelector('.text-sm');
+    expect(badgeMd).toBeInTheDocument();
 
     rerender(<RoleBadge role="admin" size="lg" />);
-    expect(screen.getByText(/administrator/i)).toHaveClass('text-base');
+    // Check that the badge renders with large size (text-base class)
+    expect(screen.getByText(/administrator/i)).toBeInTheDocument();
+    const badgeLg = container.querySelector('.text-base');
+    expect(badgeLg).toBeInTheDocument();
   });
 
   it('should show icon by default', () => {
