@@ -13,12 +13,22 @@ const api = axios.create({
   },
 });
 
-// Request interceptor - add auth token
+// Request interceptor - add auth token (HTTP Basic Auth for KumoMTA)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Get token from Zustand store (avoid circular dependency by importing lazily)
+    const authStorage = localStorage.getItem('kumomta-auth-storage');
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        const token = parsed?.state?.token;
+        if (token && config.headers) {
+          // KumoMTA expects HTTP Basic Auth format
+          config.headers.Authorization = `Basic ${token}`;
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
     }
     return config;
   },
@@ -81,7 +91,7 @@ api.interceptors.response.use(
 
     // For 401 errors, redirect to login
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('kumomta-auth-storage');
       window.location.href = '/login';
     }
 

@@ -25,12 +25,21 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add auth interceptor
+// Add auth interceptor - use Zustand store for consistency
 api.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Basic ${token}`;
+    // Get token from Zustand persisted storage
+    const authStorage = localStorage.getItem('kumomta-auth-storage');
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage);
+        const token = parsed?.state?.token;
+        if (token) {
+          config.headers.Authorization = `Basic ${token}`;
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
     }
     return config;
   },

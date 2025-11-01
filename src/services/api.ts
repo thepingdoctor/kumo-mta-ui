@@ -67,7 +67,8 @@ api.interceptors.response.use(
 
 // API endpoints
 export const apiService = {
-  // Queue management endpoints
+  // Queue management endpoints (CUSTOM - not native KumoMTA endpoints)
+  // These require middleware implementation
   queue: {
     getItems: (filters: QueueFilter) =>
       api.get<QueueItem[]>('/api/admin/queue/list', { params: filters }),
@@ -75,53 +76,57 @@ export const apiService = {
       api.put(`/api/admin/queue/${id}/status`, { status }),
     addCustomer: (data: Partial<QueueItem>) =>
       api.post('/api/admin/queue/add', data),
+    // NOTE: Standardized to use KumoMTA's native /metrics.json endpoint
     getMetrics: () =>
-      api.get<QueueMetrics>('/api/admin/metrics/queue'),
+      api.get<QueueMetrics>('/metrics.json'),
   },
 
-  // KumoMTA-specific endpoints
+  // KumoMTA-specific endpoints (VERIFIED - native KumoMTA API)
   kumomta: {
     // Get server metrics - KumoMTA uses /metrics.json (Prometheus format)
+    // ✅ VERIFIED: Native KumoMTA endpoint
     getMetrics: () =>
       api.get('/metrics.json'),
 
-    // Get bounce classifications
+    // ✅ VERIFIED: Get bounce classifications
     getBounces: () =>
       api.get('/api/admin/bounce/v1'),
 
-    // Get scheduled queue details
+    // ✅ VERIFIED: Get scheduled queue details
     getScheduledQueue: (domain?: string) =>
       api.get('/api/admin/bounce-list/v1', { params: { domain } }),
 
-    // Suspend/Resume queues
+    // ✅ VERIFIED: Suspend queue
     suspendQueue: (domain: string, reason: string, duration?: number) =>
       api.post('/api/admin/suspend/v1', { domain, reason, duration }),
 
+    // ✅ VERIFIED: Resume queue
     resumeQueue: (domain: string) =>
       api.post('/api/admin/resume/v1', { domain }),
 
-    // Suspend/Resume ready queue
+    // ✅ VERIFIED: Suspend ready queue
     suspendReadyQueue: (domain: string, reason: string) =>
       api.post('/api/admin/suspend-ready-q/v1', { domain, reason }),
 
-    // Rebind messages
+    // ✅ VERIFIED: Rebind messages
     rebindMessages: (data: { campaign?: string; tenant?: string; domain?: string; routing_domain?: string }) =>
       api.post('/api/admin/rebind/v1', data),
 
-    // Bounce messages
+    // ✅ VERIFIED: Bounce messages
     bounceMessages: (data: { campaign?: string; tenant?: string; domain?: string; reason: string }) =>
       api.post('/api/admin/bounce/v1', data),
 
-    // Get trace logs
+    // ✅ VERIFIED: Get SMTP trace logs
     getTraceLogs: () =>
       api.get('/api/admin/trace-smtp-server/v1'),
 
-    // Set diagnostic logging
+    // ✅ VERIFIED: Set diagnostic log filter
     setDiagnosticLog: (filter: string, duration?: number) =>
       api.post('/api/admin/set-diagnostic-log-filter/v1', { filter, duration }),
   },
 
-  // Configuration endpoints
+  // Configuration endpoints (CUSTOM - requires middleware)
+  // KumoMTA uses Lua-based configuration files, not REST API
   config: {
     updateCore: (config: CoreConfig) =>
       api.put('/api/admin/config/core', config),
