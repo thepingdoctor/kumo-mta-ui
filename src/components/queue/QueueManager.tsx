@@ -10,6 +10,42 @@ import { exportQueueToPDF, exportToCSV } from '../../utils/exportUtils';
 import type { EmailQueueFilter, MessageQueueStatus, BounceType, MessageQueueItem } from '../../types/email-queue';
 import type { ExportFormat } from '../common/ExportButton';
 
+/**
+ * QueueManager Component
+ *
+ * Main queue management component for monitoring and managing email messages in delivery queues.
+ * Provides real-time queue metrics, filtering capabilities, status updates, and data export functionality.
+ *
+ * @component
+ * @returns {React.ReactElement} The rendered queue management interface
+ *
+ * @description
+ * This component serves as the central dashboard for email queue operations, offering:
+ * - Real-time metrics dashboard showing queue depth, delivery rates, and message statuses
+ * - Advanced filtering by search query (recipient/sender/message ID), status, domain, and bounce type
+ * - Status update capabilities for individual queue items
+ * - Export functionality for PDF and CSV formats
+ * - Automatic data refresh and debounced search optimization
+ *
+ * @example
+ * ```tsx
+ * import QueueManager from './components/queue/QueueManager';
+ *
+ * function App() {
+ *   return (
+ *     <div className="container">
+ *       <QueueManager />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @remarks
+ * - Search queries are debounced by 300ms to reduce API calls
+ * - Queue data refreshes automatically via React Query with 30s stale time
+ * - Supports real-time status updates with optimistic UI updates
+ * - Handles offline scenarios gracefully with cached data fallback
+ */
 const QueueManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<MessageQueueStatus | ''>('');
@@ -39,6 +75,42 @@ const QueueManager: React.FC = () => {
     updateStatus,
   } = useQueue(filters);
 
+  /**
+   * Handle queue item status change
+   *
+   * Updates the status of a specific queue item and provides user feedback via toast notifications.
+   * Uses React Query mutations for optimistic updates and automatic cache invalidation.
+   *
+   * @async
+   * @function handleStatusChange
+   * @param {string} id - The unique identifier of the queue item to update
+   * @param {MessageQueueStatus} status - The new status to set for the queue item
+   * @returns {Promise<void>} Resolves when the status update is complete
+   * @throws {Error} When the API request fails (caught internally and displayed as toast)
+   *
+   * @description
+   * Status change flow:
+   * 1. Initiates mutation request to update queue item status
+   * 2. React Query performs optimistic update in UI
+   * 3. On success: Shows success toast and invalidates related queries
+   * 4. On error: Reverts optimistic update and shows error toast
+   *
+   * Supported status transitions:
+   * - scheduled → ready (manual queue activation)
+   * - ready → suspended (pause delivery)
+   * - suspended → ready (resume delivery)
+   * - deferred → ready (retry delivery)
+   * - * → cancelled (cancel message)
+   *
+   * @example
+   * ```tsx
+   * // Resume a suspended message
+   * await handleStatusChange('msg-123', 'ready');
+   *
+   * // Cancel a scheduled message
+   * await handleStatusChange('msg-456', 'cancelled');
+   * ```
+   */
   const handleStatusChange = async (id: string, status: MessageQueueStatus) => {
     try {
       await updateStatus.mutateAsync({ id, status });
@@ -48,6 +120,56 @@ const QueueManager: React.FC = () => {
     }
   };
 
+  /**
+   * Handle queue data export
+   *
+   * Exports the current queue data to either PDF or CSV format with comprehensive column mapping.
+   * Includes validation, error handling, and user feedback via toast notifications.
+   *
+   * @function handleExport
+   * @param {ExportFormat} format - The export format ('pdf' | 'csv')
+   * @returns {void}
+   * @throws {Error} When export utility functions fail (caught internally)
+   *
+   * @description
+   * Export process:
+   * 1. Validates that queue data exists and is not empty
+   * 2. For PDF: Generates formatted PDF document with tables and metrics
+   * 3. For CSV: Maps queue items to CSV columns with proper headers
+   * 4. Triggers browser download with timestamped filename
+   * 5. Shows success/error feedback to user
+   *
+   * CSV Export Columns (14 fields):
+   * - Message ID: Unique message identifier
+   * - Recipient: Email recipient address
+   * - Sender: Email sender address
+   * - Domain: Recipient domain
+   * - Queue Name: Name of the delivery queue
+   * - Status: Current message status (scheduled, ready, delivered, etc.)
+   * - Priority: Message priority level
+   * - Attempts: Number of delivery attempts
+   * - Size (bytes): Message size in bytes
+   * - Campaign ID: Associated campaign identifier
+   * - Bounce Type: Classification of bounce (hard, soft, block, complaint)
+   * - Last Bounce: Reason for most recent bounce
+   * - Created At: Timestamp when message was created
+   * - Delivered At: Timestamp when message was delivered
+   *
+   * @example
+   * ```tsx
+   * // Export to PDF
+   * handleExport('pdf');
+   *
+   * // Export to CSV with timestamp
+   * handleExport('csv'); // Generates: email-queue-export-1699999999999.csv
+   * ```
+   *
+   * @remarks
+   * - CSV filename includes Unix timestamp for uniqueness
+   * - PDF export includes metrics dashboard and full table
+   * - Empty datasets trigger warning toast instead of export
+   * - Export errors are logged to console for debugging
+   */
   const handleExport = (format: ExportFormat) => {
     if (!queueItems || queueItems.length === 0) {
       toast.warning('No data to export');
@@ -59,7 +181,7 @@ const QueueManager: React.FC = () => {
         exportQueueToPDF(queueItems);
         toast.success('Queue data exported to PDF successfully');
       } else {
-        // Email queue CSV columns
+        // Email queue CSV columns - 14 comprehensive fields for detailed analysis
         const columns = [
           { header: 'Message ID', dataKey: 'message_id' },
           { header: 'Recipient', dataKey: 'recipient' },
@@ -85,9 +207,79 @@ const QueueManager: React.FC = () => {
     }
   };
 
-  // Calculate email queue metrics
+  /**
+   * Calculate email queue metrics
+   *
+   * Computes comprehensive metrics from queue items for dashboard display.
+   * Provides counts by status and calculates delivery/bounce rate percentages.
+   *
+   * @function calculateMetrics
+   * @param {MessageQueueItem[]} items - Array of queue items to analyze
+   * @returns {Object} Calculated metrics object
+   * @returns {number} return.total - Total number of messages in queue
+   * @returns {number} return.queueDepth - Count of messages pending delivery (ready + scheduled + deferred)
+   * @returns {number} return.delivered - Count of successfully delivered messages
+   * @returns {number} return.bounced - Count of bounced messages
+   * @returns {number} return.inDelivery - Count of messages currently being delivered
+   * @returns {number} return.suspended - Count of suspended messages
+   * @returns {string} return.deliveryRate - Percentage of delivered messages (1 decimal place)
+   * @returns {string} return.bounceRate - Percentage of bounced messages (1 decimal place)
+   *
+   * @description
+   * Metric Calculations:
+   *
+   * 1. Queue Depth = ready + scheduled + deferred messages
+   *    - Represents messages waiting to be delivered
+   *    - Critical metric for queue backlog monitoring
+   *
+   * 2. Delivery Rate = (delivered / total) × 100
+   *    - Percentage of messages successfully delivered
+   *    - Formatted to 1 decimal place (e.g., "95.3%")
+   *    - Returns "0.0" for empty queues to prevent division by zero
+   *
+   * 3. Bounce Rate = (bounced / total) × 100
+   *    - Percentage of messages that bounced
+   *    - Formatted to 1 decimal place (e.g., "2.5%")
+   *    - Returns "0.0" for empty queues to prevent division by zero
+   *
+   * Status Categorization:
+   * - Queue Depth: scheduled, ready, deferred (awaiting delivery)
+   * - In Delivery: in_delivery (actively sending)
+   * - Delivered: delivered (successfully sent)
+   * - Bounced: bounced (failed delivery)
+   * - Suspended: suspended (paused delivery)
+   *
+   * @example
+   * ```tsx
+   * const items = [
+   *   { status: 'delivered', ... },
+   *   { status: 'delivered', ... },
+   *   { status: 'bounced', ... },
+   *   { status: 'ready', ... },
+   * ];
+   *
+   * const metrics = calculateMetrics(items);
+   * // {
+   * //   total: 4,
+   * //   queueDepth: 1,
+   * //   delivered: 2,
+   * //   bounced: 1,
+   * //   inDelivery: 0,
+   * //   suspended: 0,
+   * //   deliveryRate: "50.0",
+   * //   bounceRate: "25.0"
+   * // }
+   * ```
+   *
+   * @remarks
+   * - All percentage calculations use toFixed(1) for consistent formatting
+   * - Empty queue safeguard prevents division by zero errors
+   * - Queue depth includes scheduled and deferred to show total pending
+   * - Metrics are recalculated on every render for real-time accuracy
+   */
   const calculateMetrics = (items: MessageQueueItem[]) => {
     const total = items.length;
+    // Queue depth: messages waiting to be delivered (pending states)
     const queueDepth = items.filter(i =>
       i.status === 'ready' || i.status === 'scheduled' || i.status === 'deferred'
     ).length;
@@ -96,7 +288,9 @@ const QueueManager: React.FC = () => {
     const inDelivery = items.filter(i => i.status === 'in_delivery').length;
     const suspended = items.filter(i => i.status === 'suspended').length;
 
+    // Calculate delivery rate: (delivered / total) × 100, with safeguard for empty queue
     const deliveryRate = total > 0 ? ((delivered / total) * 100).toFixed(1) : '0.0';
+    // Calculate bounce rate: (bounced / total) × 100, with safeguard for empty queue
     const bounceRate = total > 0 ? ((bounced / total) * 100).toFixed(1) : '0.0';
 
     return {

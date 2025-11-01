@@ -16,7 +16,7 @@ Phase 2B focused on migrating UI components, hooks, and services to use the new 
 
 ## ✅ Components Updated (3 files)
 
-### 1. **QueueTable.tsx** ✅ (139 → 278 lines)
+### 1. **QueueTable.tsx** ✅ (139 → 277 lines)
 
 **Location**: `src/components/queue/QueueTable.tsx`
 
@@ -91,15 +91,15 @@ cancelled:    gray (manually cancelled)
 Removed legacy fields:
 - ❌ customerName, customerPhone, estimatedWaitTime
 
-Added email queue fields:
-- ✅ message_id, domain, queue_name
-- ✅ priority, num_attempts, size_bytes
-- ✅ campaign_id, bounce_classification, last_bounce_reason
-- ✅ created_at, delivered_at
+Added email queue fields (13 total):
+- ✅ message_id, recipient, sender, domain
+- ✅ queue_name, status, priority, num_attempts
+- ✅ size_bytes, campaign_id, bounce_classification
+- ✅ last_bounce_reason, created_at, delivered_at
 
 ---
 
-### 3. **useQueue.ts Hook** ✅ (42 → 164 lines)
+### 3. **useQueue.ts Hook** ✅ (42 → 163 lines)
 
 **Location**: `src/hooks/useQueue.ts`
 
@@ -138,10 +138,10 @@ adaptLegacyStatus(status: QueueItem['status']): MessageQueueStatus
 
 | Component | Before | After | Change |
 |-----------|--------|-------|--------|
-| **QueueTable** | 139 lines | 278 lines | +100% (more features) |
+| **QueueTable** | 139 lines | 277 lines | +99% (more features) |
 | **QueueManager** | 216 lines | 292 lines | +35% (enhanced) |
-| **useQueue Hook** | 42 lines | 164 lines | +290% (more features) |
-| **Total** | 397 lines | 734 lines | +85% |
+| **useQueue Hook** | 42 lines | 163 lines | +288% (more features) |
+| **Total** | 397 lines | 732 lines | +84% |
 
 ### Feature Improvements
 
@@ -152,7 +152,7 @@ adaptLegacyStatus(status: QueueItem['status']): MessageQueueStatus
 | **Filter Options** | 3 | 4 | +33% |
 | **Metrics** | 4 basic | 8 comprehensive | +100% |
 | **Mutations** | 2 | 7 | +250% |
-| **Export Fields** | 7 | 14 | +100% |
+| **Export Fields** | 7 | 13 | +86% |
 
 ---
 
@@ -244,14 +244,14 @@ const adaptLegacyQueueItem = (item: QueueItem): MessageQueueItem => ({
 ## 📋 Files Modified
 
 ### Source Files (3):
-1. ✅ `src/components/queue/QueueTable.tsx` (+139 lines)
+1. ✅ `src/components/queue/QueueTable.tsx` (+138 lines)
 2. ✅ `src/components/queue/QueueManager.tsx` (+76 lines)
-3. ✅ `src/hooks/useQueue.ts` (+122 lines)
+3. ✅ `src/hooks/useQueue.ts` (+121 lines)
 
 ### Documentation Files (1):
 4. ✅ `docs/PHASE_2B_SUMMARY.md` (this file)
 
-**Total Changes**: +337 lines of production code + documentation
+**Total Changes**: +335 lines of production code + documentation
 
 ---
 
@@ -262,7 +262,7 @@ const adaptLegacyQueueItem = (item: QueueItem): MessageQueueItem => ({
 - ✅ Implemented 9-state status system
 - ✅ Added bounce classification and SMTP response display
 - ✅ Created visual attempt progress warnings
-- **Deliverable**: 278-line production-ready component
+- **Deliverable**: 277-line production-ready component
 
 ### 💻 Coder Agent #2 (QueueManager)
 - ✅ Enhanced filters for domain and bounce type
@@ -276,7 +276,7 @@ const adaptLegacyQueueItem = (item: QueueItem): MessageQueueItem => ({
 - ✅ Implemented backward compatibility adapters
 - ✅ Created smart filter detection
 - ✅ Maintained all legacy mutations
-- **Deliverable**: 164-line comprehensive hook
+- **Deliverable**: 163-line comprehensive hook
 
 **Consensus**: 3/3 agents delivered production-ready code
 

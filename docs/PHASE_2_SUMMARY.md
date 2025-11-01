@@ -18,10 +18,10 @@ Phase 2 focused on refactoring the queue data model from customer service queues
 
 Created comprehensive TypeScript type definitions for email message queues:
 
-**File**: `src/types/email-queue.ts` (290 lines)
+**File**: `src/types/email-queue.ts` (209 lines)
 
 **Core Interfaces**:
-- ✅ `MessageQueueItem` - 40+ fields for complete email queue modeling
+- ✅ `MessageQueueItem` - 31 fields for complete email queue modeling
 - ✅ `MessageQueueStatus` - 9 message lifecycle states
 - ✅ `QueueState` - 4 queue operational states
 - ✅ `BounceType` - 5 bounce classification types
@@ -50,7 +50,7 @@ Created comprehensive TypeScript type definitions for email message queues:
 
 Created conversion utilities between legacy and email queue formats:
 
-**File**: `src/adapters/queue-adapter.ts` (180 lines)
+**File**: `src/adapters/queue-adapter.ts` (154 lines)
 
 **Functions**:
 - ✅ `legacyToEmailQueue()` - Convert QueueItem → MessageQueueItem
@@ -119,7 +119,7 @@ Created detailed design and refactoring plans:
 
 | Category | Legacy Model | New Email Model | Improvement |
 |----------|-------------|-----------------|-------------|
-| **Fields** | 16 fields | 40+ fields | +150% |
+| **Fields** | 16 fields | 31 fields | +94% |
 | **Status States** | 4 states | 9 message + 4 queue states | +225% |
 | **Purpose** | Customer service | Email MTA | ✅ Correct domain |
 | **KumoMTA Compatibility** | 20% | 100% | +80% |
@@ -454,7 +454,7 @@ Covered in separate phase after middleware is available.
 
 Phase 2A successfully established the type system foundation for email queue management. The new `MessageQueueItem` interface provides comprehensive support for KumoMTA integration with:
 
-- 40+ fields covering all email queue scenarios
+- 31 fields covering all email queue scenarios
 - 9 message lifecycle states
 - Complete metadata and tracking capabilities
 - Backward compatibility via adapter layer

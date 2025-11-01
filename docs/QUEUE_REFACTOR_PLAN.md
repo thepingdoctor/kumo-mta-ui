@@ -14,13 +14,13 @@ The current `QueueItem` interface mixes **customer service queue concepts** (cus
 
 | File | Type | Lines | Priority | Complexity |
 |------|------|-------|----------|------------|
-| `/src/types/queue.ts` | Type Definition | 50 | CRITICAL | LOW |
-| `/src/types/index.ts` | Type Export | 50 | CRITICAL | LOW |
-| `/src/components/queue/QueueManager.tsx` | React Component | 216 | HIGH | MEDIUM |
-| `/src/components/queue/QueueTable.tsx` | React Component | 139 | HIGH | MEDIUM |
+| `/src/types/queue.ts` | Type Definition | 61 | CRITICAL | LOW |
+| `/src/types/index.ts` | Type Export | 80 | CRITICAL | LOW |
+| `/src/components/queue/QueueManager.tsx` | React Component | 292 | HIGH | MEDIUM |
+| `/src/components/queue/QueueTable.tsx` | React Component | 277 | HIGH | MEDIUM |
 | `/src/components/queue/VirtualQueueTable.tsx` | React Component | 164 | HIGH | MEDIUM |
-| `/src/hooks/useQueue.ts` | React Hook | 42 | HIGH | LOW |
-| `/src/services/api.ts` | API Service | 146 | HIGH | MEDIUM |
+| `/src/hooks/useQueue.ts` | React Hook | 163 | HIGH | LOW |
+| `/src/services/api.ts` | API Service | 145 | HIGH | MEDIUM |
 | `/src/utils/exportUtils.ts` | Export Utilities | 443 | MEDIUM | LOW |
 
 ### Test Files Requiring Updates
@@ -128,7 +128,7 @@ export interface QueueItem {
 | `sender` | QueueManager, QueueTable, VirtualQueueTable, exportUtils | Email sender address | ✅ Already in use |
 | `retries` | QueueTable | Retry attempt count | ✅ Already in use |
 
-**FINDING**: Components are ALREADY using MTA fields (`recipient`, `sender`, `retries`) even though they don't exist in `/src/types/queue.ts`! This means they're using the definition from `/src/types/index.ts`.
+**FINDING**: Components are ALREADY using MTA fields (`recipient`, `sender`, `retries`) which exist in the hybrid definition in `/src/types/index.ts` but not in `/src/types/queue.ts`. This created confusion during refactoring planning.
 
 ---
 

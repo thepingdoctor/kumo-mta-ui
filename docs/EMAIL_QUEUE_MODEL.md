@@ -18,6 +18,7 @@ This document defines the new email queue data model for KumoMTA integration, re
 /**
  * Represents an individual email message in the KumoMTA queue
  * Replaces the legacy QueueItem interface designed for customer service
+ * Contains 31 fields for complete email queue modeling
  */
 export interface MessageQueueItem {
   // Core Identifiers
