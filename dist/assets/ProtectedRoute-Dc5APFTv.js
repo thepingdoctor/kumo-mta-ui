@@ -1,0 +1,1 @@
+import{u as r,j as t,N as o}from"./react-vendor-CYm809Et.js";import{u as e}from"./authStore-D2_G-NGY.js";import"./vendor-DC1Pnyyi.js";import"./chart-vendor-hJRC9QiP.js";import"./utils-vendor-YtSAaKOK.js";const s=({children:s})=>{const{isAuthenticated:a}=e(),n=r();return a?t.jsx(t.Fragment,{children:s}):t.jsx(o,{to:"/login",state:{from:n},replace:!0})};export{s as default};

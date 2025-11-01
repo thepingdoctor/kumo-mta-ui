@@ -1,9 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Path aliases for cleaner imports
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@types': path.resolve(__dirname, './src/types'),
+      '@services': path.resolve(__dirname, './src/services'),
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -107,15 +119,52 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'query-vendor': ['@tanstack/react-query'],
-          'chart-vendor': ['chart.js', 'react-chartjs-2'],
-          'form-vendor': ['react-hook-form'],
-          'ui-vendor': ['lucide-react'],
+        manualChunks: (id) => {
+          // Vendor chunks for core libraries
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@tanstack/react-query')) {
+              return 'query-vendor';
+            }
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
+              return 'chart-vendor';
+            }
+            if (id.includes('html2canvas')) {
+              return 'html2canvas-vendor'; // Separate large dependency
+            }
+            if (id.includes('react-hook-form')) {
+              return 'form-vendor';
+            }
+            if (id.includes('lucide-react')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('axios')) {
+              return 'http-vendor';
+            }
+            if (id.includes('zustand') || id.includes('dompurify')) {
+              return 'utils-vendor';
+            }
+            // Other node_modules go to a shared vendor chunk
+            return 'vendor';
+          }
         },
       },
     },
+    // Optimize bundle size
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.log in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info'], // Remove specific console methods
+      },
+    },
+    // Increase chunk size warning limit for large dependencies
     chunkSizeWarningLimit: 1000,
+    // Enable source maps for debugging (can disable in production)
+    sourcemap: false,
   },
 });
