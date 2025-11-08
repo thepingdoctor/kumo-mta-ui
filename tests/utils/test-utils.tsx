@@ -22,6 +22,9 @@ interface AllTheProvidersProps {
   children: React.ReactNode;
 }
 
+// Wrapper component for test providers
+// This is a test utility, not a component for Fast Refresh
+// eslint-disable-next-line react-refresh/only-export-components
 const AllTheProviders: React.FC<AllTheProvidersProps> = ({ children }) => {
   const queryClient = createTestQueryClient();
 
@@ -37,6 +40,8 @@ const customRender = (
   options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
+// Re-export testing library utilities
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react';
 export { customRender as render };
 export { createTestQueryClient };
