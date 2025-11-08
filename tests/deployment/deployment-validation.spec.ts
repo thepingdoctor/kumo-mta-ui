@@ -27,7 +27,7 @@ test.describe('Pre-Deployment Validation', () => {
 
       expect(distExists).toBe('exists');
       console.log('✅ Build artifacts verified');
-    } catch (error) {
+    } catch {
       throw new Error('Build artifacts missing');
     }
   });
@@ -43,7 +43,7 @@ test.describe('Pre-Deployment Validation', () => {
 
       console.log(`📊 Bundle size: ${sizeInKB.toFixed(2)}KB`);
       expect(sizeInKB).toBeLessThanOrEqual(MAX_SIZE_KB);
-    } catch (error) {
+    } catch {
       console.warn('⚠️  Could not verify bundle size');
     }
   });
@@ -64,15 +64,15 @@ test.describe('Pre-Deployment Validation', () => {
 
   test('should verify no critical security vulnerabilities', () => {
     try {
-      const auditResult = execSync('npm audit --production --audit-level=high', {
+      execSync('npm audit --production --audit-level=high', {
         encoding: 'utf-8',
         stdio: 'pipe'
       });
 
       console.log('✅ No high-severity vulnerabilities found');
-    } catch (error: any) {
+    } catch (error: unknown) {
       // npm audit exits with code 1 if vulnerabilities found
-      if (error.stdout) {
+      if (error && typeof error === 'object' && 'stdout' in error) {
         console.warn('⚠️  Security audit warnings:', error.stdout);
       }
       // Don't fail deployment for audit issues, but warn
@@ -175,16 +175,20 @@ test.describe('Post-Deployment Validation', () => {
     expect(loadTime).toBeLessThan(5000);
   });
 
-  test('should have monitoring active', async ({ page, request }) => {
+  test('should have monitoring active', async ({ page }) => {
     // Check if analytics/monitoring is working
     await page.goto(DEPLOYMENT_URL);
     await page.waitForLoadState('networkidle');
 
     const monitoringActive = await page.evaluate(() => {
       return !!(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).gtag ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).analytics ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).plausible ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).__monitoring
       );
     });
@@ -202,13 +206,13 @@ test.describe('Post-Deployment Validation', () => {
 
     if (headers) {
       const cacheControl = headers['cache-control'];
-      const cdn = headers['cf-ray'] || headers['x-cache'] || headers['x-amz-cf-id'];
+      const _cdn = headers['cf-ray'] || headers['x-cache'] || headers['x-amz-cf-id'];
 
       if (cacheControl) {
         console.log(`📊 Cache-Control: ${cacheControl}`);
       }
 
-      if (cdn) {
+      if (_cdn) {
         console.log('✅ CDN headers detected');
       }
     }
@@ -233,7 +237,7 @@ test.describe('Health Monitoring', () => {
           success: response?.status() === 200,
           responseTime: Date.now() - startTime
         });
-      } catch (error) {
+      } catch {
         healthChecks.push({
           timestamp: Date.now(),
           success: false,
@@ -261,7 +265,7 @@ test.describe('Health Monitoring', () => {
     expect(avgResponseTime).toBeLessThan(3000);
   });
 
-  test('should handle concurrent requests', async ({ page, context }) => {
+  test('should handle concurrent requests', async ({ context }) => {
     const pages = await Promise.all([
       context.newPage(),
       context.newPage(),
@@ -298,7 +302,7 @@ test.describe('Rollback Procedures', () => {
       } else {
         console.log('⚠️  No rollback script found at scripts/rollback.sh');
       }
-    } catch (error) {
+    } catch {
       console.log('⚠️  Could not verify rollback script');
     }
   });
@@ -314,7 +318,7 @@ test.describe('Rollback Procedures', () => {
       } else {
         console.log('⚠️  No deployment docs found');
       }
-    } catch (error) {
+    } catch {
       console.log('⚠️  Could not verify deployment docs');
     }
   });
@@ -345,6 +349,7 @@ test.describe('Degradation Detection', () => {
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).__lcp = lastEntry.renderTime || lastEntry.loadTime;
       }).observe({ type: 'largest-contentful-paint', buffered: true });
     });
@@ -352,6 +357,7 @@ test.describe('Degradation Detection', () => {
     await page.goto(DEPLOYMENT_URL);
     await page.waitForLoadState('networkidle');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lcp = await page.evaluate(() => (window as any).__lcp || 0);
 
     if (lcp > 0) {
@@ -389,7 +395,7 @@ test.describe('Degradation Detection', () => {
 
       // Fail if >25% regression
       expect(regression).toBeLessThan(25);
-    } catch (error) {
+    } catch {
       console.warn('⚠️  Could not check bundle size');
     }
   });

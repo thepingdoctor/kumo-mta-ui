@@ -228,7 +228,9 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
 
       // Mock window.location.href BEFORE making request
       const originalLocation = window.location;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any).location;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       window.location = { href: '' } as any;
 
       // Import apiService to get the axios instance with interceptors
@@ -243,10 +245,13 @@ describe('KumoMTA Authentication Flow Integration Tests', () => {
       let errorCaught = false;
       try {
         await apiService.kumomta.getMetrics();
-      } catch (error: any) {
+      } catch (error: unknown) {
         errorCaught = true;
         // Verify it's a 401 error
-        expect(error.response?.status).toBe(401);
+        if (error && typeof error === 'object' && 'response' in error) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          expect((error as any).response?.status).toBe(401);
+        }
       }
 
       // Verify request was made and failed

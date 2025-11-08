@@ -10,7 +10,6 @@
  * @run-on: pre-commit, CI/CD
  */
 
-import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { describe, test, expect, beforeAll } from 'vitest';
@@ -91,20 +90,20 @@ describe('Bundle Size Validation', () => {
   test('should not exceed total bundle size limit', () => {
     const totalSize = bundleStats.reduce((sum, stat) => sum + stat.size, 0);
     const totalKB = totalSize / 1024;
-    const limitKB = LIMITS.total / 1024;
+    const _limitKB = LIMITS.total / 1024;
 
-    console.log(`📊 Total bundle size: ${totalKB.toFixed(2)}KB (limit: ${limitKB}KB)`);
+    console.log(`📊 Total bundle size: ${totalKB.toFixed(2)}KB (limit: ${_limitKB}KB)`);
 
     expect(totalSize).toBeLessThanOrEqual(LIMITS.total);
   });
 
   test('should not exceed JavaScript bundle limit', () => {
-    const jsFiles = bundleStats.filter(stat => /\.m?js$/.test(stat.name));
-    const jsSize = jsFiles.reduce((sum, stat) => sum + stat.size, 0);
+    const _jsFiles = bundleStats.filter(stat => /\.m?js$/.test(stat.name));
+    const jsSize = _jsFiles.reduce((sum, stat) => sum + stat.size, 0);
     const jsKB = jsSize / 1024;
-    const limitKB = LIMITS.js / 1024;
+    const _limitKB = LIMITS.js / 1024;
 
-    console.log(`📊 JavaScript size: ${jsKB.toFixed(2)}KB (limit: ${limitKB}KB)`);
+    console.log(`📊 JavaScript size: ${jsKB.toFixed(2)}KB (limit: ${_limitKB}KB)`);
 
     expect(jsSize).toBeLessThanOrEqual(LIMITS.js);
   });
@@ -212,7 +211,6 @@ describe('Bundle Size Validation', () => {
 
       // Check for common patterns that indicate tree-shaking is working
       const hasMinified = /\w{1,2}\(\w+\)/.test(content); // Minified function calls
-      const hasNoComments = !/\/\*[^*]*\*\//.test(content); // No multi-line comments
 
       expect(hasMinified).toBe(true);
       console.log('✅ Tree-shaking appears to be working');
@@ -253,7 +251,6 @@ describe('Build Configuration Validation', () => {
       // Check for important optimizations
       const hasMinify = /minify/.test(config);
       const hasTreeShaking = /treeshake/.test(config);
-      const hasChunkSizeWarning = /chunkSizeWarningLimit/.test(config);
 
       expect(hasMinify || hasTreeShaking).toBe(true);
 

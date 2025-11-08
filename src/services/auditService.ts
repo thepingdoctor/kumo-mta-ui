@@ -38,7 +38,7 @@ auditApi.interceptors.request.use(
         if (token) {
           config.headers.Authorization = `Basic ${token}`;
         }
-      } catch (e) {
+      } catch {
         // Ignore parse errors
       }
     }

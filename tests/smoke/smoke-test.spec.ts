@@ -81,7 +81,7 @@ test.describe('Production Smoke Tests', () => {
         try {
           const buffer = await response.body();
           totalSize += buffer.length;
-        } catch (e) {
+        } catch {
           // Ignore errors for cached/already consumed responses
         }
       }
@@ -163,7 +163,7 @@ test.describe('Production Smoke Tests', () => {
     console.log('✅ Responsive design validated');
   });
 
-  test('should have API endpoints responding', async ({ page, request }) => {
+  test('should have API endpoints responding', async ({ request }) => {
     // Test if there are any API endpoints configured
     const apiBase = process.env.API_URL || `${DEPLOYMENT_URL}/api`;
 
@@ -176,7 +176,7 @@ test.describe('Production Smoke Tests', () => {
       } else {
         console.log('⚠️  No API health endpoint found');
       }
-    } catch (e) {
+    } catch {
       console.log('⚠️  No API configured (static site)');
     }
   });
@@ -224,9 +224,13 @@ test.describe('Production Smoke Tests', () => {
     const analyticsFound = await page.evaluate(() => {
       // Check for common analytics tools
       return !!(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).gtag ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).ga ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).analytics ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).plausible
       );
     });
@@ -249,9 +253,9 @@ test.describe('Critical User Flows', () => {
     const interactiveElements = page.locator('button, a, input').first();
 
     if (await interactiveElements.count() > 0) {
-      const startTime = Date.now();
+      const _startTime = Date.now();
       await interactiveElements.click({ timeout: 1000 }).catch(() => {});
-      const responseTime = Date.now() - startTime;
+      const responseTime = Date.now() - _startTime;
 
       // First Input Delay should be < 100ms
       expect(responseTime).toBeLessThan(100);

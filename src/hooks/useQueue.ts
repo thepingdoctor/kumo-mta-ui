@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
-import type { EmailQueueFilter, MessageQueueItem, QueueOperationResult } from '../types/email-queue';
+import type { EmailQueueFilter, MessageQueueItem } from '../types/email-queue';
 import type { QueueFilter, QueueItem } from '../types/queue';
 import { ERROR_MESSAGES } from '../constants';
 

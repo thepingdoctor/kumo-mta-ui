@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { apiService } from '../../../src/services/api';
 import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
@@ -223,7 +223,9 @@ describe('API Service', () => {
 
       // Verify Authorization header was added
       expect(capturedHeaders).toBeDefined();
-      expect(capturedHeaders?.authorization).toBe(`Basic ${mockToken}`);
+      if (capturedHeaders) {
+        expect(capturedHeaders.authorization).toBe(`Basic ${mockToken}`);
+      }
     });
 
     it('should set correct content type', async () => {

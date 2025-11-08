@@ -16,15 +16,6 @@ import { test, expect, chromium } from '@playwright/test';
 
 const DEPLOYMENT_URL = process.env.DEPLOYMENT_URL || 'http://localhost:3000';
 
-interface WebVitalsMetrics {
-  lcp: number;
-  fid: number;
-  cls: number;
-  fcp: number;
-  ttfb: number;
-  tti: number; // Time to Interactive
-}
-
 test.describe('Web Vitals Performance Tests', () => {
   test('should meet LCP threshold (< 2.5s)', async ({ page }) => {
     let lcpValue = 0;
@@ -34,6 +25,7 @@ test.describe('Web Vitals Performance Tests', () => {
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).__lcp = lastEntry.renderTime || lastEntry.loadTime;
       }).observe({ type: 'largest-contentful-paint', buffered: true });
     });
@@ -41,6 +33,7 @@ test.describe('Web Vitals Performance Tests', () => {
     await page.goto(DEPLOYMENT_URL);
     await page.waitForLoadState('networkidle');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lcpValue = await page.evaluate(() => (window as any).__lcp || 0);
 
     console.log(`📊 LCP: ${lcpValue.toFixed(2)}ms`);
@@ -56,6 +49,7 @@ test.describe('Web Vitals Performance Tests', () => {
       new PerformanceObserver((list) => {
         const firstInput = list.getEntries()[0];
         if (firstInput && 'processingStart' in firstInput && 'startTime' in firstInput) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).__fid = (firstInput as any).processingStart - firstInput.startTime;
         }
       }).observe({ type: 'first-input', buffered: true });
@@ -72,6 +66,7 @@ test.describe('Web Vitals Performance Tests', () => {
       // Wait a bit for the observer to capture FID
       await page.waitForTimeout(100);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fidValue = await page.evaluate(() => (window as any).__fid || 0);
 
       if (fidValue > 0) {
@@ -91,8 +86,11 @@ test.describe('Web Vitals Performance Tests', () => {
       let clsScore = 0;
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (!(entry as any).hadRecentInput) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             clsScore += (entry as any).value;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window as any).__cls = clsScore;
           }
         }
@@ -108,6 +106,7 @@ test.describe('Web Vitals Performance Tests', () => {
     });
     await page.waitForTimeout(500);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clsValue = await page.evaluate(() => (window as any).__cls || 0);
 
     console.log(`📊 CLS: ${clsValue.toFixed(4)}`);
@@ -130,16 +129,16 @@ test.describe('Web Vitals Performance Tests', () => {
 
   test('should meet TTFB threshold (< 600ms)', async ({ page }) => {
     const startTime = Date.now();
-    const response = await page.goto(DEPLOYMENT_URL);
+    const _response = await page.goto(DEPLOYMENT_URL);
     const ttfb = Date.now() - startTime;
 
     console.log(`📊 TTFB: ${ttfb}ms`);
     expect(ttfb).toBeLessThan(600);
-    expect(response?.status()).toBe(200);
+    expect(_response?.status()).toBe(200);
   });
 
   test('should become interactive quickly (TTI < 3.8s)', async ({ page }) => {
-    const startTime = Date.now();
+    const _startTime = Date.now();
 
     await page.goto(DEPLOYMENT_URL);
 
@@ -149,22 +148,22 @@ test.describe('Web Vitals Performance Tests', () => {
       return document.readyState === 'complete';
     });
 
-    const tti = Date.now() - startTime;
+    const tti = Date.now() - _startTime;
 
     console.log(`📊 TTI: ${tti}ms`);
     expect(tti).toBeLessThan(3800);
   });
 
   test('should collect comprehensive metrics report', async ({ page }) => {
-    const metrics: Partial<WebVitalsMetrics> = {};
-
     // Set up all observers
     await page.evaluateOnNewDocument(() => {
       // LCP
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).__metrics = (window as any).__metrics || {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).__metrics.lcp = lastEntry.renderTime || lastEntry.loadTime;
       }).observe({ type: 'largest-contentful-paint', buffered: true });
 
@@ -172,6 +171,7 @@ test.describe('Web Vitals Performance Tests', () => {
       new PerformanceObserver((list) => {
         const firstInput = list.getEntries()[0];
         if (firstInput && 'processingStart' in firstInput && 'startTime' in firstInput) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).__metrics.fid = (firstInput as any).processingStart - firstInput.startTime;
         }
       }).observe({ type: 'first-input', buffered: true });
@@ -180,21 +180,24 @@ test.describe('Web Vitals Performance Tests', () => {
       let clsScore = 0;
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (!(entry as any).hadRecentInput) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             clsScore += (entry as any).value;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window as any).__metrics.cls = clsScore;
           }
         }
       }).observe({ type: 'layout-shift', buffered: true });
     });
 
-    const startTime = Date.now();
     await page.goto(DEPLOYMENT_URL);
     await page.waitForLoadState('networkidle');
 
     // Get FCP and TTFB
     const navigationMetrics = await page.evaluate(() => {
       const fcp = performance.getEntriesByName('first-contentful-paint')[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const navTiming = performance.getEntriesByType('navigation')[0] as any;
 
       return {
@@ -205,6 +208,7 @@ test.describe('Web Vitals Performance Tests', () => {
     });
 
     // Get Web Vitals
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const webVitals = await page.evaluate(() => (window as any).__metrics || {});
 
     const report = {
@@ -237,8 +241,8 @@ test.describe('Web Vitals Performance Tests', () => {
     const context = await browser.newContext();
 
     // Simulate slow 3G
-    const client = await context.newCDPSession(await context.pages()[0]);
-    await client.send('Network.emulateNetworkConditions', {
+    const _client = await context.newCDPSession(await context.pages()[0]);
+    await _client.send('Network.emulateNetworkConditions', {
       offline: false,
       downloadThroughput: 400 * 1024 / 8, // 400 Kbps
       uploadThroughput: 400 * 1024 / 8,
@@ -246,12 +250,12 @@ test.describe('Web Vitals Performance Tests', () => {
     });
 
     const page = await context.newPage();
-    const startTime = Date.now();
+    const _startTime = Date.now();
 
     await page.goto(DEPLOYMENT_URL);
     await page.waitForLoadState('networkidle');
 
-    const loadTime = Date.now() - startTime;
+    const loadTime = Date.now() - _startTime;
 
     console.log(`📊 Slow 3G load time: ${loadTime}ms`);
 

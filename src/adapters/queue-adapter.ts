@@ -80,6 +80,7 @@ export function legacyToEmailQueue(legacy: QueueItem): MessageQueueItem {
  * Used for backward compatibility with existing components
  */
 export function emailQueueToLegacy(email: MessageQueueItem): QueueItem {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const legacyMetadata = email.metadata as Record<string, any> | undefined;
 
   return {

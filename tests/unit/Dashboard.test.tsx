@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { render } from '../utils/test-utils';
@@ -228,7 +228,7 @@ describe('Dashboard Component', () => {
       });
 
       // Capture initial render state
-      const initialHeading = screen.getByText('Dashboard');
+      const _initialHeading = screen.getByText('Dashboard');
 
       // Rerender with same props should not cause re-fetch or errors
       rerender(<Dashboard />);
@@ -240,7 +240,7 @@ describe('Dashboard Component', () => {
       });
 
       // Verify component identity is preserved (memoization working)
-      expect(initialHeading).toBeInTheDocument();
+      expect(_initialHeading).toBeInTheDocument();
     });
   });
 });

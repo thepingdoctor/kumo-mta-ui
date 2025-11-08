@@ -97,7 +97,7 @@ api.interceptors.request.use(
           // KumoMTA expects HTTP Basic Auth format
           config.headers.Authorization = `Basic ${token}`;
         }
-      } catch (e) {
+      } catch {
         // Ignore parse errors - allows requests to proceed without auth
       }
     }

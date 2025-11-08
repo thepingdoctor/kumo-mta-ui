@@ -49,7 +49,7 @@ describe('useOfflineSync', () => {
 
   it('should sync pending requests when online', async () => {
     const mockResponse = { ok: true, status: 200 };
-    (global.fetch as unknown as jest.Mock).mockResolvedValue(mockResponse);
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
     // Queue a request first
     await offlineStorage.queueRequest({
@@ -91,9 +91,9 @@ describe('useOfflineSync', () => {
 
   it('should retry failed requests up to max retries', async () => {
     const mockResponse = { ok: false, status: 500 };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
-    const requestId = await offlineStorage.queueRequest({
+    await offlineStorage.queueRequest({
       url: '/api/test',
       method: 'POST',
       headers: {},
@@ -113,7 +113,7 @@ describe('useOfflineSync', () => {
   });
 
   it('should handle sync errors gracefully', async () => {
-    (global.fetch as any).mockRejectedValue(new Error('Network error'));
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
 
     await offlineStorage.queueRequest({
       url: '/api/test',
@@ -133,7 +133,7 @@ describe('useOfflineSync', () => {
 
   it('should update lastSyncTime after successful sync', async () => {
     const mockResponse = { ok: true, status: 200 };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
     await offlineStorage.queueRequest({
       url: '/api/test',
@@ -167,7 +167,7 @@ describe('useOfflineSync', () => {
 
   it('should sync when coming back online', async () => {
     const mockResponse = { ok: true, status: 200 };
-    (global.fetch as any).mockResolvedValue(mockResponse);
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
     await offlineStorage.queueRequest({
       url: '/api/test',
@@ -175,7 +175,7 @@ describe('useOfflineSync', () => {
       headers: {},
     });
 
-    const { result } = renderHook(() => useOfflineSync());
+    renderHook(() => useOfflineSync());
 
     // Simulate coming back online
     const onlineEvent = new Event('online');

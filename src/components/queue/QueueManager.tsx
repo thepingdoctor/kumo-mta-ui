@@ -50,7 +50,6 @@ const QueueManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<MessageQueueStatus | ''>('');
   const [domainFilter, setDomainFilter] = useState('');
-  const [queueNameFilter, setQueueNameFilter] = useState('');
   const [bounceTypeFilter, setBounceTypeFilter] = useState<BounceType | ''>('');
   const toast = useToast();
 

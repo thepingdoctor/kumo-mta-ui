@@ -20,7 +20,8 @@ describe('Layout Component', () => {
     vi.clearAllMocks();
 
     // Setup auth store mock with proper selector function
-    (useAuthStore as any).mockImplementation((selector: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (useAuthStore as any).mockImplementation((selector: (state: any) => any) => {
       const state = {
         user: { id: '1', email: 'test@example.com', name: 'Test User', role: 'admin' as const },
         token: 'mock-token',
@@ -125,7 +126,7 @@ describe('Layout Component', () => {
     });
 
     it('should render outlet for child routes', () => {
-      const { container } = render(<Layout />);
+      render(<Layout />);
 
       // The Outlet component from react-router-dom should be present in main content
       const mainElement = screen.getByRole('main');
