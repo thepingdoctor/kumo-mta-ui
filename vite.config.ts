@@ -134,48 +134,107 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // Optimized manual chunking strategy for better caching and parallel loading
         manualChunks: (id) => {
-          // Vendor chunks for core libraries
+          // Vendor chunks for core libraries with strategic splitting
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'react-vendor';
+            // Core React libraries - cached separately for stability
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-core';
             }
+            // React Router - separate for better caching
+            if (id.includes('react-router-dom')) {
+              return 'react-router';
+            }
+            // Data fetching library
             if (id.includes('@tanstack/react-query')) {
               return 'query-vendor';
             }
+            // Charting libraries - loaded on-demand
             if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
               return 'chart-vendor';
             }
+            // Large dependencies get their own chunks
             if (id.includes('html2canvas')) {
-              return 'html2canvas-vendor'; // Separate large dependency
+              return 'html2canvas-vendor';
             }
+            // Form handling
             if (id.includes('react-hook-form')) {
               return 'form-vendor';
             }
+            // Icons library
             if (id.includes('lucide-react')) {
-              return 'ui-vendor';
+              return 'icons-vendor';
             }
+            // HTTP client
             if (id.includes('axios')) {
               return 'http-vendor';
             }
-            if (id.includes('zustand') || id.includes('dompurify')) {
-              return 'utils-vendor';
+            // State management and utilities
+            if (id.includes('zustand')) {
+              return 'state-vendor';
             }
-            // Other node_modules go to a shared vendor chunk
-            return 'vendor';
+            // Date utilities
+            if (id.includes('date-fns')) {
+              return 'date-vendor';
+            }
+            // Sanitization
+            if (id.includes('dompurify')) {
+              return 'security-vendor';
+            }
+            // CSV parsing
+            if (id.includes('papaparse')) {
+              return 'csv-vendor';
+            }
+            // All other node_modules go to shared vendor chunk
+            return 'vendor-common';
+          }
+
+          // Application code splitting by route/feature
+          if (id.includes('/src/components/queue/')) {
+            return 'feature-queue';
+          }
+          if (id.includes('/src/components/analytics/')) {
+            return 'feature-analytics';
+          }
+          if (id.includes('/src/components/config/')) {
+            return 'feature-config';
+          }
+          if (id.includes('/src/components/auth/')) {
+            return 'feature-auth';
+          }
+          if (id.includes('/src/components/security/')) {
+            return 'feature-security';
           }
         },
+        // Optimize chunk file names for better caching
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
-    // Optimize bundle size
+    // Optimize bundle size with modern JavaScript target
     target: 'esnext',
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true, // Remove console.log in production
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info'], // Remove specific console methods
+        pure_funcs: ['console.log', 'console.info', 'console.debug'], // Remove specific console methods
+        passes: 2, // Run compression twice for better results
       },
+      mangle: {
+        safari10: true, // Handle Safari 10+ bug
+      },
+      format: {
+        comments: false, // Remove all comments
+      },
+    },
+    // Enable CSS code splitting for better caching
+    cssCodeSplit: true,
+    // Optimize module preload for faster initial load
+    modulePreload: {
+      polyfill: true,
     },
     // Performance budget enforcement
     // Warn if any chunk exceeds 250KB (gzipped ~80KB)

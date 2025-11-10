@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { useThemeStore, Theme } from '../../stores/themeStore';
 
@@ -7,7 +7,11 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+/**
+ * Theme toggle component with button and dropdown variants
+ * Optimized with React.memo to prevent unnecessary re-renders
+ */
+export const ThemeToggle: React.FC<ThemeToggleProps> = memo(({
   variant = 'button',
   className = ''
 }) => {
@@ -15,47 +19,47 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Memoize event handlers to prevent recreation
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setIsOpen(false);
+    }
+  }, []);
+
+  const handleEscape = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false);
+    }
+  }, []);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, handleClickOutside]);
 
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen]);
+  }, [isOpen, handleEscape]);
 
-  const getIcon = (size: number = 20) => {
-    const iconProps = { size, 'aria-hidden': 'true' };
-    if (actualTheme === 'dark') {
-      return <Moon {...iconProps} />;
-    }
-    return <Sun {...iconProps} />;
-  };
+  // Memoize icon rendering to prevent recreation
+  const currentIcon = useMemo(() => {
+    const iconProps = { size: 20, 'aria-hidden': 'true' as const };
+    return actualTheme === 'dark' ? <Moon {...iconProps} /> : <Sun {...iconProps} />;
+  }, [actualTheme]);
 
-  const themeOptions: { value: Theme; label: string; icon: React.ReactNode }[] = [
+  // Memoize theme options to prevent recreation
+  const themeOptions = useMemo<{ value: Theme; label: string; icon: React.ReactNode }[]>(() => [
     { value: 'light', label: 'Light', icon: <Sun size={16} /> },
     { value: 'dark', label: 'Dark', icon: <Moon size={16} /> },
     { value: 'system', label: 'System', icon: <Monitor size={16} /> },
-  ];
+  ], []);
 
   if (variant === 'button') {
     return (
@@ -68,7 +72,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         aria-label={`Switch to ${actualTheme === 'light' ? 'dark' : 'light'} mode`}
         title={`Current theme: ${theme}${theme === 'system' ? ` (${actualTheme})` : ''}`}
       >
-        {getIcon()}
+        {currentIcon}
       </button>
     );
   }
@@ -82,7 +86,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        {getIcon()}
+        {currentIcon}
       </button>
 
       {isOpen && (
@@ -118,4 +122,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       )}
     </div>
   );
-};
+});
+
+// Add display name for debugging
+ThemeToggle.displayName = 'ThemeToggle';

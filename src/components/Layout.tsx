@@ -1,25 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Mail, Settings, Shield, BarChart3, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { ToastContainer } from './common/ToastContainer';
 import { ThemeToggle } from './common/ThemeToggle';
 
-const Layout: React.FC = () => {
+/**
+ * Main application layout with sidebar navigation
+ * Optimized with React.memo to prevent unnecessary re-renders
+ */
+const Layout: React.FC = memo(() => {
   const location = useLocation();
   const logout = useAuthStore((state) => state.logout);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
 
-  const navigation = [
+  // Memoize navigation array to prevent recreation on every render
+  const navigation = React.useMemo(() => [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Queue Manager', path: '/queue', icon: Mail },
     { name: 'Configuration', path: '/config', icon: Settings },
     { name: 'Security', path: '/security', icon: Shield },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
-  ];
+  ], []);
 
-  const closeSidebar = () => setSidebarOpen(false);
+  // Memoize callback to prevent recreation
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   // Keyboard navigation support
   useEffect(() => {
@@ -171,6 +177,9 @@ const Layout: React.FC = () => {
       <ToastContainer />
     </div>
   );
-};
+});
+
+// Add display name for debugging
+Layout.displayName = 'Layout';
 
 export default Layout;

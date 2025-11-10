@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -8,29 +8,48 @@ import UpdatePrompt from './components/common/UpdatePrompt';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Lazy load routes for code splitting and better performance
-const Layout = lazy(() => import('./components/Layout'));
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const QueueManager = lazy(() => import('./components/queue/QueueManager'));
-const ConfigEditor = lazy(() => import('./components/config/ConfigEditor'));
-const AdvancedAnalytics = lazy(() => import('./components/analytics/AdvancedAnalytics'));
-const HealthCheck = lazy(() => import('./components/health/HealthCheck'));
-const LoginPage = lazy(() => import('./components/auth/LoginPage'));
-const ProtectedRoute = lazy(() => import('./components/auth/ProtectedRoute'));
-const SecurityPage = lazy(() => import('./components/security/SecurityPage'));
+// Use webpackChunkName for better debugging in production
+const Layout = lazy(() => import(/* webpackChunkName: "layout" */ './components/Layout'));
+const Dashboard = lazy(() => import(/* webpackChunkName: "dashboard" */ './components/Dashboard'));
+const QueueManager = lazy(() => import(/* webpackChunkName: "queue" */ './components/queue/QueueManager'));
+const ConfigEditor = lazy(() => import(/* webpackChunkName: "config" */ './components/config/ConfigEditor'));
+const AdvancedAnalytics = lazy(() => import(/* webpackChunkName: "analytics" */ './components/analytics/AdvancedAnalytics'));
+const HealthCheck = lazy(() => import(/* webpackChunkName: "health" */ './components/health/HealthCheck'));
+const LoginPage = lazy(() => import(/* webpackChunkName: "auth" */ './components/auth/LoginPage'));
+const ProtectedRoute = lazy(() => import(/* webpackChunkName: "auth" */ './components/auth/ProtectedRoute'));
+const SecurityPage = lazy(() => import(/* webpackChunkName: "security" */ './components/security/SecurityPage'));
 
-const queryClient = new QueryClient({
+/**
+ * Optimized QueryClient configuration
+ * - Aggressive caching with staleTime for reduced API calls
+ * - Exponential backoff retry strategy
+ * - Network-aware refetching
+ */
+const createQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5000,
-      gcTime: 300000, // Updated from deprecated cacheTime
-      refetchOnWindowFocus: false,
+      staleTime: 5000, // Consider data fresh for 5s
+      gcTime: 300000, // Cache for 5 minutes (updated from cacheTime)
+      refetchOnWindowFocus: false, // Prevent excessive refetches
+      refetchOnReconnect: true, // Refetch when network reconnects
+      refetchOnMount: true, // Always refetch on mount
+    },
+    mutations: {
+      retry: 2, // Retry failed mutations
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     },
   },
 });
 
+/**
+ * Main App component with optimized routing and query management
+ */
 function App() {
+  // Create QueryClient instance once per app lifecycle
+  const queryClient = useMemo(() => createQueryClient(), []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Clock, Mail, AlertCircle, Server, ArrowRight, AlertTriangle } from 'lucide-react';
 import type { MessageQueueItem, MessageQueueStatus } from '../../types/email-queue';
 import { format } from 'date-fns';
@@ -12,8 +12,9 @@ interface QueueTableProps {
 /**
  * Queue table component for email message queue with KumoMTA integration
  * Displays comprehensive email delivery information with 9-state status tracking
+ * Optimized with React.memo to prevent unnecessary re-renders
  */
-export const QueueTable: React.FC<QueueTableProps> = ({ items, onStatusChange, isLoading }) => {
+export const QueueTable: React.FC<QueueTableProps> = memo(({ items, onStatusChange, isLoading }) => {
   if (isLoading) {
     return (
       <div className="rounded-lg bg-white shadow overflow-hidden">
@@ -37,8 +38,9 @@ export const QueueTable: React.FC<QueueTableProps> = ({ items, onStatusChange, i
 
   /**
    * Get status badge color based on 9-state email queue status
+   * Memoized to prevent recalculation on every render
    */
-  const getStatusColor = (status: MessageQueueStatus): string => {
+  const getStatusColor = useCallback((status: MessageQueueStatus): string => {
     const colors: Record<MessageQueueStatus, string> = {
       scheduled: 'bg-purple-100 text-purple-800',
       ready: 'bg-blue-100 text-blue-800',
@@ -51,24 +53,26 @@ export const QueueTable: React.FC<QueueTableProps> = ({ items, onStatusChange, i
       cancelled: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || colors.ready;
-  };
+  }, []);
 
   /**
    * Format timestamp to human-readable format
+   * Memoized to prevent recalculation
    */
-  const formatTimestamp = (timestamp?: string): string => {
+  const formatTimestamp = useCallback((timestamp?: string): string => {
     if (!timestamp) return 'N/A';
     try {
       return format(new Date(timestamp), 'MMM dd, HH:mm:ss');
     } catch {
       return 'Invalid date';
     }
-  };
+  }, []);
 
   /**
    * Get bounce classification badge color
+   * Memoized to prevent recalculation
    */
-  const getBounceColor = (type?: string): string => {
+  const getBounceColor = useCallback((type?: string): string => {
     const colors: Record<string, string> = {
       hard: 'bg-red-100 text-red-800',
       soft: 'bg-orange-100 text-orange-800',
@@ -77,7 +81,7 @@ export const QueueTable: React.FC<QueueTableProps> = ({ items, onStatusChange, i
       unknown: 'bg-gray-100 text-gray-800',
     };
     return type ? (colors[type] || colors.unknown) : '';
-  };
+  }, []);
 
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow">
@@ -272,6 +276,9 @@ export const QueueTable: React.FC<QueueTableProps> = ({ items, onStatusChange, i
       </div>
     </div>
   );
-};
+});
+
+// Add display name for debugging
+QueueTable.displayName = 'QueueTable';
 
 export default QueueTable;

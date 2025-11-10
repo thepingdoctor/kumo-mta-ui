@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { apiService } from '../services/api';
 
 /**
  * Hook for KumoMTA server metrics
+ * Optimized with memoized query options
  */
 export const useKumoMetrics = (refetchInterval = 5000) => {
-  return useQuery({
+  // Memoize query options to prevent recreation on every render
+  const queryOptions = useMemo(() => ({
     queryKey: ['kumomta-metrics'],
     queryFn: async () => {
       const response = await apiService.kumomta.getMetrics();
@@ -14,28 +17,34 @@ export const useKumoMetrics = (refetchInterval = 5000) => {
     refetchInterval,
     retry: 3,
     staleTime: 3000,
-  });
+  }), [refetchInterval]);
+
+  return useQuery(queryOptions);
 };
 
 /**
  * Hook for bounce classifications
+ * Optimized with memoized query options
  */
 export const useBounces = () => {
-  return useQuery({
+  const queryOptions = useMemo(() => ({
     queryKey: ['kumomta-bounces'],
     queryFn: async () => {
       const response = await apiService.kumomta.getBounces();
       return response.data;
     },
     retry: 2,
-  });
+  }), []);
+
+  return useQuery(queryOptions);
 };
 
 /**
  * Hook for scheduled queue details
+ * Optimized with memoized query options
  */
 export const useScheduledQueue = (domain?: string) => {
-  return useQuery({
+  const queryOptions = useMemo(() => ({
     queryKey: ['kumomta-scheduled-queue', domain],
     queryFn: async () => {
       const response = await apiService.kumomta.getScheduledQueue(domain);
@@ -43,7 +52,9 @@ export const useScheduledQueue = (domain?: string) => {
     },
     enabled: !!domain,
     retry: 2,
-  });
+  }), [domain]);
+
+  return useQuery(queryOptions);
 };
 
 /**
