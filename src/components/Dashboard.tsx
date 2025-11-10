@@ -1,11 +1,12 @@
-import React, { useMemo } from 'react';
-import { Activity, Mail, AlertTriangle, Clock, Server } from 'lucide-react';
+import React, { useMemo, useEffect, useState } from 'react';
+import { Activity, Mail, AlertTriangle, Clock, Server, Wifi, WifiOff } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import { useChartData } from '../hooks/useChartData';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { parsePrometheusMetrics } from '../utils/prometheusParser';
+import { useRealtimeMetrics } from '../hooks/useRealtimeMetrics';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +31,14 @@ ChartJS.register(
 );
 
 const Dashboard: React.FC = () => {
-  // Fetch real metrics from KumoMTA (Prometheus format)
+  // Real-time metrics via WebSocket
+  const {
+    metrics: realtimeMetrics,
+    systemMetrics,
+    isConnected: wsConnected
+  } = useRealtimeMetrics({ enabled: true });
+
+  // Fallback to polling if WebSocket unavailable
   const { data: kumoMetrics, isLoading, error } = useQuery({
     queryKey: ['kumo-metrics'],
     queryFn: async () => {
@@ -38,7 +46,7 @@ const Dashboard: React.FC = () => {
       // Parse Prometheus JSON format to standard metrics
       return parsePrometheusMetrics(response.data);
     },
-    refetchInterval: 15000, // Refresh every 15 seconds (optimized from 5s)
+    refetchInterval: wsConnected ? false : 15000, // Only poll if WebSocket disconnected
     retry: 3,
   });
 
@@ -55,12 +63,27 @@ const Dashboard: React.FC = () => {
   // Use real-time chart data hook
   const { chartData, isLoading: chartLoading } = useChartData('messages_sent', 24);
 
-  const metrics = useMemo(() => ({
-    sent: kumoMetrics?.messages_sent || 0,
-    bounced: kumoMetrics?.bounces || 0,
-    delayed: kumoMetrics?.delayed || 0,
-    throughput: kumoMetrics?.throughput || 0
-  }), [kumoMetrics]);
+  // Merge real-time and polled metrics
+  const metrics = useMemo(() => {
+    const baseMetrics = {
+      sent: kumoMetrics?.messages_sent || 0,
+      bounced: kumoMetrics?.bounces || 0,
+      delayed: kumoMetrics?.delayed || 0,
+      throughput: kumoMetrics?.throughput || 0,
+    };
+
+    // Override with real-time data if available
+    if (wsConnected && realtimeMetrics.size > 0) {
+      return {
+        sent: realtimeMetrics.get('messages_sent')?.value || baseMetrics.sent,
+        bounced: realtimeMetrics.get('bounces')?.value || baseMetrics.bounced,
+        delayed: realtimeMetrics.get('delayed')?.value || baseMetrics.delayed,
+        throughput: realtimeMetrics.get('throughput')?.value || baseMetrics.throughput,
+      };
+    }
+
+    return baseMetrics;
+  }, [kumoMetrics, realtimeMetrics, wsConnected]);
 
   const chartOptions = useMemo(() => ({
     responsive: true,
@@ -134,7 +157,23 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Dashboard</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Dashboard</h2>
+        {/* WebSocket Connection Indicator */}
+        <div className="flex items-center space-x-2">
+          {wsConnected ? (
+            <>
+              <Wifi className="h-5 w-5 text-green-500 dark:text-green-400" />
+              <span className="text-sm text-green-600 dark:text-green-400 font-medium">Real-time</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">Polling</span>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

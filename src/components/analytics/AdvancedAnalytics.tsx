@@ -1,12 +1,17 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Bar, Pie, Doughnut } from 'react-chartjs-2';
-import { TrendingUp, TrendingDown, Activity, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, AlertCircle, BarChart3, Globe } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../../services/api';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ExportButton } from '../common/ExportButton';
 import { exportAnalyticsToPDF, exportToCSV } from '../../utils/exportUtils';
 import type { ExportFormat } from '../common/ExportButton';
+import { TrendChart } from './TrendChart';
+import { DeliverabilityHeatmap } from './DeliverabilityHeatmap';
+import { CampaignComparison } from './CampaignComparison';
+import { PredictiveInsights } from './PredictiveInsights';
+import { CustomReportBuilder } from './CustomReportBuilder';
 
 // Define Chart type for proper typing
 interface ChartInstance {
@@ -17,6 +22,7 @@ const AdvancedAnalytics: React.FC = () => {
   const bounceChartRef = useRef<ChartInstance | null>(null);
   const queueChartRef = useRef<ChartInstance | null>(null);
   const bounceClassificationChartRef = useRef<ChartInstance | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'trends' | 'predictions' | 'reports'>('overview');
 
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['analytics-metrics'],
@@ -167,8 +173,8 @@ const AdvancedAnalytics: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Advanced Analytics</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Advanced Analytics</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Detailed insights into your email delivery performance
           </p>
         </div>
@@ -180,8 +186,61 @@ const AdvancedAnalytics: React.FC = () => {
         />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`${
+              activeTab === 'overview'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+          >
+            <BarChart3 className="h-5 w-5 mr-2" />
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('trends')}
+            className={`${
+              activeTab === 'trends'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+          >
+            <TrendingUp className="h-5 w-5 mr-2" />
+            Trends & Insights
+          </button>
+          <button
+            onClick={() => setActiveTab('predictions')}
+            className={`${
+              activeTab === 'predictions'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+          >
+            <Activity className="h-5 w-5 mr-2" />
+            Predictions
+          </button>
+          <button
+            onClick={() => setActiveTab('reports')}
+            className={`${
+              activeTab === 'reports'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+          >
+            <Globe className="h-5 w-5 mr-2" />
+            Custom Reports
+          </button>
+        </nav>
+      </div>
+
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Success Rate */}
         <div className="rounded-lg bg-white p-6 shadow">
           <div className="flex items-center">
@@ -381,6 +440,30 @@ const AdvancedAnalytics: React.FC = () => {
             </table>
           </div>
         </div>
+      )}
+        </>
+      )}
+
+      {/* Trends & Insights Tab */}
+      {activeTab === 'trends' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TrendChart metric="messages_sent" title="Messages Sent Trend" timeRange="day" />
+            <TrendChart metric="bounces" title="Bounces Trend" timeRange="day" />
+          </div>
+          <DeliverabilityHeatmap />
+          <CampaignComparison />
+        </div>
+      )}
+
+      {/* Predictions Tab */}
+      {activeTab === 'predictions' && (
+        <PredictiveInsights metric="messages_sent" />
+      )}
+
+      {/* Custom Reports Tab */}
+      {activeTab === 'reports' && (
+        <CustomReportBuilder />
       )}
     </div>
   );

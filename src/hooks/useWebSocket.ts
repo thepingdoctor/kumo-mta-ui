@@ -27,6 +27,8 @@ export interface UseWebSocketReturn {
 /**
  * Custom hook for WebSocket connections
  * Provides automatic reconnection and message handling
+ *
+ * @deprecated Use useRealtimeQueue or useRealtimeMetrics for typed event subscriptions
  */
 export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn => {
   const {

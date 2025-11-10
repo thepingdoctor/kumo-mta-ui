@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Search, Filter, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useQueue } from '../../hooks/useQueue';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
+import { useRealtimeQueue } from '../../hooks/useRealtimeQueue';
 import { QueueTable } from './QueueTable';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ExportButton } from '../common/ExportButton';
@@ -52,6 +53,15 @@ const QueueManager: React.FC = () => {
   const [domainFilter, setDomainFilter] = useState('');
   const [bounceTypeFilter, setBounceTypeFilter] = useState<BounceType | ''>('');
   const toast = useToast();
+
+  // Real-time queue updates via WebSocket
+  const { lastUpdate, isConnected: wsConnected } = useRealtimeQueue({
+    domain: domainFilter || undefined,
+    onUpdate: (update) => {
+      // Show toast notification for queue changes
+      toast.info(`Queue ${update.queue_name}: ${update.message_count} messages`);
+    },
+  });
 
   // Debounce search query to reduce API calls
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -328,15 +338,31 @@ const QueueManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Email Queue Management</h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <div className="flex items-center space-x-3">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-dark-text">Email Queue Management</h2>
+            {/* WebSocket Connection Indicator */}
+            <div className="flex items-center space-x-1">
+              {wsConnected ? (
+                <>
+                  <Wifi className="h-4 w-4 text-green-500 dark:text-green-400" />
+                  <span className="text-xs text-green-600 dark:text-green-400">Live</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4 text-gray-400" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Polling</span>
+                </>
+              )}
+            </div>
+          </div>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Monitor and manage email messages in delivery queues
           </p>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={() => refetch()}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-surface hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             aria-label="Refresh queue data"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
