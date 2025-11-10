@@ -2,6 +2,27 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Papa from 'papaparse';
 
+// Security configuration types
+interface TLSConfig {
+  enabled: boolean;
+  certificatePath?: string;
+  privateKeyPath?: string;
+  cipherSuites?: string;
+}
+
+interface DKIMConfig {
+  enabled: boolean;
+  domain?: string;
+  selector?: string;
+  privateKeyPath?: string;
+}
+
+interface IPRule {
+  ip: string;
+  type: string;
+  description: string;
+}
+
 interface PDFOptions {
   title?: string;
   orientation?: 'portrait' | 'landscape';
@@ -59,10 +80,10 @@ const addPDFMetadata = (doc: jsPDF, metadata: Record<string, string>, startY: nu
 
   let yPos = startY;
   Object.entries(metadata).forEach(([key, value]) => {
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(`${key}:`, 14, yPos);
-    doc.setFont(undefined, 'normal');
-    doc.text(value, 50, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(value), 50, yPos);
     yPos += 6;
   });
 
@@ -204,7 +225,7 @@ export const exportQueueToPDF = (queueItems: QueueItem[]): void => {
   const metadata = {
     'Total Items': queueItems.length.toString(),
     'Waiting': queueItems.filter(i => i.status === 'waiting').length.toString(),
-    'Processing': queueItems.filter(i => ['sending', 'in-progress'].includes(i.status)).length.toString(),
+    'Processing': queueItems.filter(i => ['sending', 'in-progress'].includes(String(i.status))).length.toString(),
     'Completed': queueItems.filter(i => i.status === 'completed').length.toString(),
   };
 

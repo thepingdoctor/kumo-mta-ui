@@ -53,7 +53,10 @@ export function initSentry() {
 
           // Sanitize query parameters that might contain tokens
           if (event.request.query_string) {
-            const sanitized = event.request.query_string
+            const queryString = typeof event.request.query_string === 'string'
+              ? event.request.query_string
+              : '';
+            const sanitized = queryString
               .replace(/([?&])(token|key|password|secret)=[^&]*/gi, '$1$2=***REDACTED***');
             event.request.query_string = sanitized;
           }
@@ -110,9 +113,13 @@ export const SentryErrorBoundary = Sentry.ErrorBoundary;
  */
 export function captureException(error: Error, context?: Record<string, unknown>) {
   if (import.meta.env.PROD) {
-    Sentry.captureException(error, {
-      contexts: context ? { custom: context } : undefined,
-    });
+    if (context) {
+      Sentry.captureException(error, {
+        contexts: { custom: context },
+      });
+    } else {
+      Sentry.captureException(error);
+    }
   } else {
     console.error('Error (dev):', error, context);
   }

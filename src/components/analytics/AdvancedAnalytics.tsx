@@ -321,7 +321,7 @@ const AdvancedAnalytics: React.FC = () => {
             <h3 className="mb-4 text-lg font-medium text-gray-900">Bounce Distribution</h3>
             <div className="h-64">
               <Pie
-                ref={bounceChartRef}
+                ref={bounceChartRef as React.RefObject<ChartJS<'pie'>>}
                 data={bounceChartData}
                 options={{
                   responsive: true,

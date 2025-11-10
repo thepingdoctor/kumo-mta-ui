@@ -77,11 +77,12 @@ class OfflineStorage {
     const db = await this.initDB();
     const storeName = STORES[store];
 
+    const now = Date.now();
     const item: StorageItem<T> = {
       key,
       value,
-      timestamp: Date.now(),
-      expiresAt: ttlMinutes ? Date.now() + ttlMinutes * 60 * 1000 : undefined,
+      timestamp: now,
+      ...(ttlMinutes !== undefined && { expiresAt: now + ttlMinutes * 60 * 1000 }),
     };
 
     return new Promise((resolve, reject) => {

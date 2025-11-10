@@ -32,12 +32,12 @@ class ErrorTracker {
     const errorLog: ErrorLog = {
       id: this.generateId(),
       message: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined,
+      ...(error instanceof Error && error.stack && { stack: error.stack }),
       severity,
       timestamp: Date.now(),
-      context,
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-      url: typeof window !== 'undefined' ? window.location.href : undefined,
+      ...(context !== undefined && { context }),
+      ...(typeof navigator !== 'undefined' && { userAgent: navigator.userAgent }),
+      ...(typeof window !== 'undefined' && { url: window.location.href }),
     };
 
     this.errors.push(errorLog);

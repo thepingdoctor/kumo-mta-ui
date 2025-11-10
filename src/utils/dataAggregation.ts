@@ -31,8 +31,11 @@ export const aggregateByTimeWindow = (
   const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
   let currentWindow: TimeSeriesDataPoint[] = [];
+  const firstPoint = sorted[0];
+  if (!firstPoint) return [];
+
   let windowStart = new Date(
-    Math.floor(sorted[0].timestamp.getTime() / windowMs) * windowMs
+    Math.floor(firstPoint.timestamp.getTime() / windowMs) * windowMs
   );
 
   for (const point of sorted) {
@@ -104,11 +107,14 @@ export const calculateMovingAverage = (
   for (let i = windowSize - 1; i < data.length; i++) {
     const window = data.slice(i - windowSize + 1, i + 1);
     const average = window.reduce((sum, p) => sum + p.value, 0) / windowSize;
+    const dataPoint = data[i];
 
-    result.push({
-      timestamp: data[i].timestamp,
-      value: average,
-    });
+    if (dataPoint) {
+      result.push({
+        timestamp: dataPoint.timestamp,
+        value: average,
+      });
+    }
   }
 
   return result;
@@ -117,7 +123,7 @@ export const calculateMovingAverage = (
 /**
  * Group data by key
  */
-export const groupBy = <T, K extends keyof any>(
+export const groupBy = <T, K extends string | number | symbol>(
   array: T[],
   keyFn: (item: T) => K
 ): Record<K, T[]> => {
@@ -139,7 +145,8 @@ export const calculatePercentile = (values: number[], percentile: number): numbe
 
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.ceil((percentile / 100) * sorted.length) - 1;
-  return sorted[Math.max(0, index)];
+  const value = sorted[Math.max(0, index)];
+  return value ?? 0;
 };
 
 /**
@@ -168,11 +175,17 @@ export const fillMissingTimePoints = (
   if (data.length === 0) return [];
 
   const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  const result: TimeSeriesDataPoint[] = [sorted[0]];
+  const firstPoint = sorted[0];
+  if (!firstPoint) return [];
+
+  const result: TimeSeriesDataPoint[] = [firstPoint];
 
   for (let i = 1; i < sorted.length; i++) {
     const prev = sorted[i - 1];
     const curr = sorted[i];
+
+    if (!prev || !curr) continue;
+
     const gap = curr.timestamp.getTime() - prev.timestamp.getTime();
 
     if (gap > intervalMs) {

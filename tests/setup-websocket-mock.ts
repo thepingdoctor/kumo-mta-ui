@@ -30,7 +30,8 @@ class MockWebSocket {
     if (this.readyState !== MockWebSocket.OPEN) {
       throw new Error('WebSocket is not open');
     }
-    // Simulate sending
+    // Simulate sending - data is intentionally unused in mock
+    void data;
   }
 
   close(code?: number, reason?: string): void {
@@ -38,13 +39,16 @@ class MockWebSocket {
     if (this.onclose) {
       this.onclose(new Event('close'));
     }
+    // code and reason are intentionally unused in mock
+    void code;
+    void reason;
   }
 
   addEventListener(type: string, listener: EventListener): void {
-    if (type === 'open') this.onopen = listener as any;
-    if (type === 'close') this.onclose = listener as any;
-    if (type === 'error') this.onerror = listener as any;
-    if (type === 'message') this.onmessage = listener as any;
+    if (type === 'open') this.onopen = listener as (event: Event) => void;
+    if (type === 'close') this.onclose = listener as (event: Event) => void;
+    if (type === 'error') this.onerror = listener as (event: Event) => void;
+    if (type === 'message') this.onmessage = listener as (event: MessageEvent) => void;
   }
 
   removeEventListener(type: string, listener: EventListener): void {
@@ -57,7 +61,7 @@ class MockWebSocket {
 
 beforeAll(() => {
   // Install WebSocket mock
-  global.WebSocket = MockWebSocket as any;
+  global.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 });
 
 afterEach(() => {

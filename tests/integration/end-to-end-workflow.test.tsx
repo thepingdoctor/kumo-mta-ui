@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe('End-to-End Workflow Tests', () => {
   it('should complete full monitoring workflow', () => {

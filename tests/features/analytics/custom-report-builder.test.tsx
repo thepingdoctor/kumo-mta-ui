@@ -3,7 +3,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdvancedAnalytics from '../../../src/components/analytics/AdvancedAnalytics';
 import { apiService } from '../../../src/services/api';
-import * as exportUtils from '../../../src/utils/exportUtils';
 
 vi.mock('../../../src/services/api');
 vi.mock('../../../src/utils/exportUtils');
@@ -97,8 +96,6 @@ describe('Custom Report Builder - Export Functionality', () => {
   });
 
   it('should include all metrics in PDF export', async () => {
-    const exportToPDF = vi.mocked(exportUtils.exportAnalyticsToPDF);
-
     vi.mocked(apiService.kumomta.getMetrics).mockResolvedValue({
       data: mockData.kumomta,
     } as never);
@@ -117,12 +114,6 @@ describe('Custom Report Builder - Export Functionality', () => {
 
     // Simulate export
     // In real implementation, this would trigger PDF generation
-    const expectedMetrics = {
-      successRate: expect.any(Number),
-      bounces: expect.any(Object),
-      queueEfficiency: expect.any(Number),
-      throughput: expect.any(Number),
-    };
 
     // Verify metrics structure
     expect(mockData).toHaveProperty('kumomta');
@@ -152,8 +143,6 @@ describe('Custom Report Builder - Export Functionality', () => {
   });
 
   it('should export bounce classifications to CSV', async () => {
-    const exportToCSV = vi.mocked(exportUtils.exportToCSV);
-
     vi.mocked(apiService.kumomta.getMetrics).mockResolvedValue({
       data: mockData.kumomta,
     } as never);

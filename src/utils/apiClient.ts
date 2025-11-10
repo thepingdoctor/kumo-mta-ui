@@ -181,12 +181,14 @@ api.interceptors.response.use(
       if (config && config.method && mutationMethods.includes(config.method.toLowerCase())) {
         try {
           // Queue the request for later - will be retried when connection restored
-          await offlineStorage.queueRequest({
+          const requestBody = config.data ? JSON.stringify(config.data) : undefined;
+          const queueData = {
             url: config.baseURL ? `${config.baseURL}${config.url}` : config.url || '',
             method: config.method.toUpperCase(),
             headers: (config.headers as Record<string, string>) || {},
-            body: config.data ? JSON.stringify(config.data) : undefined,
-          });
+            ...(requestBody !== undefined && { body: requestBody }),
+          };
+          await offlineStorage.queueRequest(queueData);
 
           // Notify user that request was queued - UI can show toast/banner
           const event = new CustomEvent('request-queued', {

@@ -47,13 +47,13 @@ describe('WebSocket + Analytics Integration', () => {
     });
 
     // Verify analytics can consume this data
-    const metrics = result.current.lastMessage?.data as any;
+    const metrics = result.current.lastMessage?.data as Record<string, unknown>;
     expect(metrics.messages_sent).toBe(10000);
     expect(metrics.throughput).toBe(500);
   });
 
   it('should stream metrics and update trend charts', async () => {
-    const messages: any[] = [];
+    const messages: unknown[] = [];
     const onMessage = vi.fn((msg) => messages.push(msg));
 
     renderHook(() =>

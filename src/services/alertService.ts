@@ -140,7 +140,7 @@ class AlertService {
     return response.data;
   }
 
-  async bulkUpdateAlerts(ids: string[], action: 'acknowledge' | 'snooze' | 'resolve' | 'dismiss', params?: any): Promise<void> {
+  async bulkUpdateAlerts(ids: string[], action: 'acknowledge' | 'snooze' | 'resolve' | 'dismiss', params?: Record<string, unknown>): Promise<void> {
     await this.client.post('/alerts/bulk', { ids, action, params });
   }
 
@@ -195,14 +195,14 @@ class AlertService {
     groupBy?: string;
     startDate?: string;
     endDate?: string;
-  }): Promise<any[]> {
+  }): Promise<unknown[]> {
     const response = await this.client.get('/alerts/trends', { params: filters });
     return response.data;
   }
 
   // ==================== Utility Methods ====================
 
-  async exportAlerts(filters?: any): Promise<Blob> {
+  async exportAlerts(filters?: Record<string, unknown>): Promise<Blob> {
     const response = await this.client.get('/alerts/export', {
       params: filters,
       responseType: 'blob',
@@ -210,7 +210,7 @@ class AlertService {
     return response.data;
   }
 
-  async importAlertRules(file: File): Promise<{ imported: number; errors: any[] }> {
+  async importAlertRules(file: File): Promise<{ imported: number; errors: unknown[] }> {
     const formData = new FormData();
     formData.append('file', file);
     const response = await this.client.post('/alerts/rules/import', formData, {

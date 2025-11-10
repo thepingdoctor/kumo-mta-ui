@@ -61,7 +61,7 @@ export const AlertRuleBuilder: React.FC<AlertRuleBuilderProps> = ({
       metric: data.metric,
       operator: data.operator,
       threshold: data.threshold,
-      timeWindow: data.timeWindow,
+      timeWindow: data.timeWindow as TimeWindow | undefined,
     };
 
     const validation = validateAlertRule({
@@ -172,10 +172,6 @@ export const AlertRuleBuilder: React.FC<AlertRuleBuilderProps> = ({
                   <select
                     {...field}
                     id="metric"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSelectedMetric(e.target.value);
-                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select metric...</option>

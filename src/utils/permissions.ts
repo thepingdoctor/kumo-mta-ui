@@ -4,8 +4,9 @@
  * Centralized permission checking and role validation utilities.
  */
 
-import { UserRole, Permission, ROLE_PERMISSIONS, ROLE_METADATA } from '../types/roles';
-import { User } from '../types';
+import { Permission, ROLE_PERMISSIONS, ROLE_METADATA } from '../types/roles';
+import type { UserRole } from '../types/roles';
+import type { User } from '../types';
 
 /**
  * Check if a user has a specific permission
@@ -238,13 +239,21 @@ export const createAuditEntry = (
 ): PermissionAuditEntry | null => {
   if (!user) return null;
 
-  return {
+  const entry: PermissionAuditEntry = {
     timestamp: new Date().toISOString(),
     userId: user.id,
     userRole: user.role as UserRole,
     permission,
     granted,
-    resource,
-    action,
   };
+
+  if (resource !== undefined) {
+    entry.resource = resource;
+  }
+
+  if (action !== undefined) {
+    entry.action = action;
+  }
+
+  return entry;
 };

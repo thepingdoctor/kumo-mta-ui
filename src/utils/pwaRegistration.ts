@@ -2,6 +2,7 @@
  * PWA Service Worker Registration with Update Detection
  */
 
+// @ts-expect-error - Virtual module from vite-plugin-pwa
 import { registerSW } from 'virtual:pwa-register';
 
 interface PWAUpdateInfo {
@@ -30,7 +31,7 @@ export const registerPWA = () => {
 
       console.log('App is ready to work offline');
     },
-    onRegistered(registration) {
+    onRegistered(registration: ServiceWorkerRegistration | undefined) {
       // Check for updates every hour
       if (registration) {
         setInterval(() => {
@@ -38,7 +39,7 @@ export const registerPWA = () => {
         }, 60 * 60 * 1000); // 1 hour
       }
     },
-    onRegisterError(error) {
+    onRegisterError(error: unknown) {
       console.error('SW registration error:', error);
     },
   });

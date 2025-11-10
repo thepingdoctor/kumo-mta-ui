@@ -60,20 +60,20 @@ const Layout: React.FC = memo(() => {
       if (e.shiftKey) {
         // Shift + Tab
         if (document.activeElement === firstElement) {
-          lastElement.focus();
+          lastElement?.focus();
           e.preventDefault();
         }
       } else {
         // Tab
         if (document.activeElement === lastElement) {
-          firstElement.focus();
+          firstElement?.focus();
           e.preventDefault();
         }
       }
     };
 
     sidebar.addEventListener('keydown', handleTabKey as EventListener);
-    firstElement.focus(); // Focus first element when sidebar opens
+    firstElement?.focus(); // Focus first element when sidebar opens
 
     return () => {
       sidebar.removeEventListener('keydown', handleTabKey as EventListener);

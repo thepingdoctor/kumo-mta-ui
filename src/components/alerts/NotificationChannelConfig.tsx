@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useNotificationChannels } from '../../hooks/useNotificationChannels';
 import { validateNotificationChannel } from '../../utils/alertRuleValidator';
-import type { NotificationChannelType, NotificationChannelFormData } from '../../types/alert';
+import type { NotificationChannelType, NotificationChannelFormData, NotificationChannel } from '../../types/alert';
 
 export const NotificationChannelConfig: React.FC = () => {
   const { channels, createChannel, updateChannel, deleteChannel, toggleChannel, testChannel, isTesting } =
@@ -54,7 +54,7 @@ export const NotificationChannelConfig: React.FC = () => {
     }
 
     if (editingId) {
-      updateChannel({ id: editingId, data }, {
+      updateChannel({ id: editingId, data: data as Partial<NotificationChannel> }, {
         onSuccess: () => {
           setShowForm(false);
           setEditingId(null);

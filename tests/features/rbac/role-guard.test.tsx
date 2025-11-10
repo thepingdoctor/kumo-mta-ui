@@ -3,13 +3,6 @@ import { render, screen } from '@testing-library/react';
 import RoleGuard from '../../../src/components/auth/RoleGuard';
 
 describe('RoleGuard - Component Rendering Based on Permissions', () => {
-  const mockUser = {
-    id: '1',
-    username: 'testuser',
-    email: 'test@example.com',
-    role: 'viewer',
-  };
-
   beforeEach(() => {
     // Reset any mocks
   });
@@ -74,7 +67,7 @@ describe('RoleGuard - Component Rendering Based on Permissions', () => {
 
   it('should handle null user gracefully', () => {
     render(
-      <RoleGuard requiredRole="viewer" userRole={null as any}>
+      <RoleGuard requiredRole="viewer" userRole={null as unknown as string}>
         <div>Protected Content</div>
       </RoleGuard>
     );

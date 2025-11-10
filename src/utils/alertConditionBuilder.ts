@@ -22,7 +22,7 @@ export class ConditionBuilder {
       metric,
       operator,
       threshold,
-      timeWindow,
+      ...(timeWindow !== undefined && { timeWindow }),
     };
     this.conditions.push(condition);
     return this;
@@ -66,7 +66,11 @@ export class ConditionBuilder {
       throw new Error('No conditions defined');
     }
     if (this.conditions.length === 1) {
-      return this.conditions[0];
+      const condition = this.conditions[0];
+      if (!condition) {
+        throw new Error('No conditions defined');
+      }
+      return condition;
     }
     // Default to AND if multiple conditions without explicit combinator
     return {
@@ -109,7 +113,7 @@ export function conditionToString(condition: AlertCondition | CompositeCondition
 /**
  * Convert condition to query parameters
  */
-export function conditionToQuery(condition: AlertCondition | CompositeCondition): Record<string, any> {
+export function conditionToQuery(condition: AlertCondition | CompositeCondition): Record<string, unknown> {
   if ('type' in condition) {
     // Composite condition
     return {
@@ -133,21 +137,23 @@ export function conditionToQuery(condition: AlertCondition | CompositeCondition)
 /**
  * Validate condition structure
  */
-export function isValidCondition(condition: any): condition is (AlertCondition | CompositeCondition) {
+export function isValidCondition(condition: unknown): condition is (AlertCondition | CompositeCondition) {
   if (!condition) return false;
+
+  if (typeof condition !== 'object' || condition === null) return false;
 
   if ('type' in condition && (condition.type === 'AND' || condition.type === 'OR')) {
     // Composite condition
-    return Array.isArray(condition.conditions) && condition.conditions.every(isValidCondition);
+    return 'conditions' in condition && Array.isArray(condition.conditions) && condition.conditions.every(isValidCondition);
   } else {
     // Simple condition
     return (
       'metric' in condition &&
       'operator' in condition &&
       'threshold' in condition &&
-      typeof condition.metric === 'string' &&
-      typeof condition.operator === 'string' &&
-      typeof condition.threshold === 'number'
+      typeof (condition as Record<string, unknown>).metric === 'string' &&
+      typeof (condition as Record<string, unknown>).operator === 'string' &&
+      typeof (condition as Record<string, unknown>).threshold === 'number'
     );
   }
 }

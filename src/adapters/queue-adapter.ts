@@ -24,12 +24,12 @@ export function legacyToEmailQueue(legacy: QueueItem): MessageQueueItem {
     recipient: legacy.customerEmail,
     sender: 'noreply@system.local', // Default sender for legacy data
     domain: extractDomain(legacy.customerEmail),
-    routing_domain: undefined,
+    routing_domain: undefined as string | undefined,
 
     // Campaign & Organization
-    campaign_id: undefined,
+    campaign_id: undefined as string | undefined,
     tenant_id: legacy.customerId,
-    pool_name: undefined,
+    pool_name: undefined as string | undefined,
 
     // Queue State Management
     status: mapLegacyStatus(legacy.status),
@@ -94,7 +94,7 @@ export function emailQueueToLegacy(email: MessageQueueItem): QueueItem {
     status: mapEmailStatusToLegacy(email.status),
     notes: (legacyMetadata?.notes as string) || '',
     estimatedWaitTime: (legacyMetadata?.estimated_wait_time as number) || 0,
-    actualWaitTime: (legacyMetadata?.actual_wait_time as number) || undefined,
+    actualWaitTime: ((legacyMetadata?.actual_wait_time as number) || undefined) as number | undefined,
     createdAt: email.created_at,
     updatedAt: email.delivered_at || email.last_attempt_at || email.created_at,
     notificationsSent: [],
@@ -129,7 +129,7 @@ function mapEmailStatusToLegacy(status: MessageQueueStatus): QueueItem['status']
  */
 function extractDomain(email: string): string {
   const parts = email.split('@');
-  return parts.length === 2 ? parts[1] : 'unknown';
+  return parts.length === 2 ? (parts[1] as string) : 'unknown';
 }
 
 /**
@@ -137,7 +137,7 @@ function extractDomain(email: string): string {
  */
 function extractNameFromEmail(email: string): string {
   const parts = email.split('@');
-  return parts.length > 0 ? parts[0] : 'Unknown';
+  return parts.length > 0 ? (parts[0] as string) : 'Unknown';
 }
 
 /**

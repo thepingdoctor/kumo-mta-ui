@@ -8,7 +8,7 @@ describe('Audit Log - Action Tracking', () => {
     username: string;
     action: string;
     resource: string;
-    details: Record<string, any>;
+    details: Record<string, unknown>;
     success: boolean;
     ipAddress?: string;
   };
@@ -245,7 +245,7 @@ describe('Audit Log - Action Tracking', () => {
 
     auditLog.push(oldEntry);
 
-    const activeLog s = auditLog.filter(
+    const activeLogs = auditLog.filter(
       (entry) => entry.timestamp >= cutoffDate
     );
 

@@ -4,7 +4,8 @@
  * Client-side permission validation for RBAC
  */
 
-import { Permission, UserRole, UserWithRole } from '../types/rbac';
+import { Permission } from '../types/rbac';
+import type { UserRole, UserWithRole } from '../types/rbac';
 
 /**
  * Role hierarchy levels (higher = more privileged)
@@ -238,8 +239,8 @@ export function isHighRiskPermission(permission: Permission): boolean {
  * Get permission category
  */
 export function getPermissionCategory(permission: Permission): string {
-  const prefix = permission.split(':')[0];
-  return prefix;
+  const prefix = permission.split(':')[0] as string | undefined;
+  return prefix ?? '';
 }
 
 /**
@@ -356,8 +357,12 @@ export function validatePermissionWithAudit(
   // In production, send to audit service
   console.log('[Permission Check]', auditData);
 
+  if (granted) {
+    return { granted };
+  }
+
   return {
     granted,
-    reason: granted ? undefined : 'Insufficient permissions',
+    reason: 'Insufficient permissions',
   };
 }

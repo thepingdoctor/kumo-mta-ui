@@ -37,7 +37,7 @@ class PerformanceMonitor {
       value,
       unit,
       timestamp: Date.now(),
-      metadata,
+      ...(metadata !== undefined && { metadata }),
     };
 
     this.metrics.push(metric);

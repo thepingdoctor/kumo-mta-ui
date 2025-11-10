@@ -16,7 +16,7 @@ describe('Alerts + WebSocket Integration', () => {
   });
 
   it('should trigger alert on queue depth threshold via WebSocket', async () => {
-    const alerts: any[] = [];
+    const alerts: Array<{ type: string; threshold: number; actual: number; timestamp: Date }> = [];
     const onMessage = vi.fn((msg) => {
       if (msg.type === 'queue') {
         const queueDepth = msg.data.depth;
@@ -57,7 +57,7 @@ describe('Alerts + WebSocket Integration', () => {
   });
 
   it('should trigger alert on bounce rate spike', async () => {
-    const alerts: any[] = [];
+    const alerts: Array<{ type: string; current: number; spike: number }> = [];
     let previousBounceRate = 2.0;
 
     const onMessage = vi.fn((msg) => {
@@ -127,7 +127,7 @@ describe('Alerts + WebSocket Integration', () => {
   });
 
   it('should send real-time alert notifications via WebSocket', async () => {
-    const notifications: any[] = [];
+    const notifications: unknown[] = [];
     const onMessage = vi.fn((msg) => {
       if (msg.type === 'alert') {
         notifications.push(msg.data);

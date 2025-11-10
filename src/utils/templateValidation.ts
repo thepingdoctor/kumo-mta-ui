@@ -4,7 +4,7 @@
  * Client-side validation for email templates
  */
 
-import { EmailTemplate, TemplateVariable } from '../types/template';
+import type { EmailTemplate, TemplateVariable } from '../types/template';
 
 /**
  * Validation result
@@ -196,10 +196,11 @@ function validateContent(content: string, format: string): ValidationError[] {
 
     let match;
     while ((match = mjmlTagPattern.exec(content)) !== null) {
-      if (!validTags.includes(match[1])) {
+      const tagName = match[1];
+      if (tagName && !validTags.includes(tagName)) {
         errors.push({
           field: 'content',
-          message: `Unknown MJML tag: <${match[1]}>`,
+          message: `Unknown MJML tag: <${tagName}>`,
           code: 'UNKNOWN_MJML_TAG',
         });
       }
@@ -313,7 +314,10 @@ function extractUsedVariables(content: string): string[] {
 
   let match;
   while ((match = variablePattern.exec(content)) !== null) {
-    variables.add(match[1].trim());
+    const varName = match[1];
+    if (varName) {
+      variables.add(varName.trim());
+    }
   }
 
   return Array.from(variables);

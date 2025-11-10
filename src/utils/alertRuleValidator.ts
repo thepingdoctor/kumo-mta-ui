@@ -78,11 +78,16 @@ export function validateAlertRule(rule: Partial<AlertRule>): AlertRuleValidation
     errors.push({ field: 'priority', message: 'Priority must be between 0 and 10' });
   }
 
-  return {
+  const result: { isValid: boolean; errors: { field: string; message: string }[]; warnings?: { field: string; message: string }[] } = {
     isValid: errors.length === 0,
     errors,
-    warnings: warnings.length > 0 ? warnings : undefined,
   };
+
+  if (warnings.length > 0) {
+    result.warnings = warnings;
+  }
+
+  return result;
 }
 
 function validateCondition(condition: AlertCondition | CompositeCondition): { field: string; message: string }[] {
@@ -115,7 +120,7 @@ function validateCondition(condition: AlertCondition | CompositeCondition): { fi
       errors.push({ field: 'condition.threshold', message: 'Threshold is required' });
     } else if (condition.metric && METRIC_RANGES[condition.metric]) {
       const range = METRIC_RANGES[condition.metric];
-      if (condition.threshold < range.min || condition.threshold > range.max) {
+      if (range && (condition.threshold < range.min || condition.threshold > range.max)) {
         errors.push({
           field: 'condition.threshold',
           message: `Threshold must be between ${range.min} and ${range.max} ${range.unit}`,
@@ -147,55 +152,60 @@ export function validateNotificationChannel(channel: Partial<NotificationChannel
 
   // Type-specific validation
   if (channel.type === 'email' && channel.config) {
-    const config = channel.config as any;
-    if (!config.recipients || config.recipients.length === 0) {
+    const config = channel.config as Record<string, unknown>;
+    if (!config.recipients || !Array.isArray(config.recipients) || config.recipients.length === 0) {
       errors.push({ field: 'config.recipients', message: 'At least one recipient is required' });
     } else {
-      const invalidEmails = config.recipients.filter((email: string) => !isValidEmail(email));
+      const invalidEmails = config.recipients.filter((email: unknown) => typeof email === 'string' && !isValidEmail(email));
       if (invalidEmails.length > 0) {
         errors.push({ field: 'config.recipients', message: `Invalid email addresses: ${invalidEmails.join(', ')}` });
       }
     }
-    if (!config.subject || config.subject.trim().length === 0) {
+    if (!config.subject || typeof config.subject !== 'string' || config.subject.trim().length === 0) {
       errors.push({ field: 'config.subject', message: 'Email subject is required' });
     }
-    if (!config.bodyTemplate || config.bodyTemplate.trim().length === 0) {
+    if (!config.bodyTemplate || typeof config.bodyTemplate !== 'string' || config.bodyTemplate.trim().length === 0) {
       errors.push({ field: 'config.bodyTemplate', message: 'Email body template is required' });
     }
   }
 
   if (channel.type === 'slack' && channel.config) {
-    const config = channel.config as any;
-    if (!config.webhookUrl || !isValidUrl(config.webhookUrl)) {
+    const config = channel.config as Record<string, unknown>;
+    if (!config.webhookUrl || typeof config.webhookUrl !== 'string' || !isValidUrl(config.webhookUrl)) {
       errors.push({ field: 'config.webhookUrl', message: 'Valid Slack webhook URL is required' });
     }
   }
 
   if (channel.type === 'webhook' && channel.config) {
-    const config = channel.config as any;
-    if (!config.url || !isValidUrl(config.url)) {
+    const config = channel.config as Record<string, unknown>;
+    if (!config.url || typeof config.url !== 'string' || !isValidUrl(config.url)) {
       errors.push({ field: 'config.url', message: 'Valid webhook URL is required' });
     }
-    if (!config.method || !['POST', 'PUT', 'PATCH'].includes(config.method)) {
+    if (!config.method || typeof config.method !== 'string' || !['POST', 'PUT', 'PATCH'].includes(config.method)) {
       errors.push({ field: 'config.method', message: 'Invalid HTTP method' });
     }
-    if (!config.bodyTemplate || config.bodyTemplate.trim().length === 0) {
+    if (!config.bodyTemplate || typeof config.bodyTemplate !== 'string' || config.bodyTemplate.trim().length === 0) {
       errors.push({ field: 'config.bodyTemplate', message: 'Webhook body template is required' });
     }
   }
 
   if (channel.type === 'pagerduty' && channel.config) {
-    const config = channel.config as any;
-    if (!config.integrationKey || config.integrationKey.trim().length === 0) {
+    const config = channel.config as Record<string, unknown>;
+    if (!config.integrationKey || typeof config.integrationKey !== 'string' || config.integrationKey.trim().length === 0) {
       errors.push({ field: 'config.integrationKey', message: 'PagerDuty integration key is required' });
     }
   }
 
-  return {
+  const result: { isValid: boolean; errors: { field: string; message: string }[]; warnings?: { field: string; message: string }[] } = {
     isValid: errors.length === 0,
     errors,
-    warnings: warnings.length > 0 ? warnings : undefined,
   };
+
+  if (warnings.length > 0) {
+    result.warnings = warnings;
+  }
+
+  return result;
 }
 
 function isValidEmail(email: string): boolean {

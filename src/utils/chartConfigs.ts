@@ -34,6 +34,7 @@ export const baseChartConfig: Partial<ChartOptions> = {
         label: (context) => {
           const label = context.dataset.label || '';
           const value = context.parsed.y;
+          if (value === null || value === undefined) return label;
           return `${label}: ${value.toLocaleString()}`;
         },
       },
@@ -65,8 +66,8 @@ export const baseChartConfig: Partial<ChartOptions> = {
 /**
  * Line chart configuration for trends
  */
-export const trendLineConfig: Partial<ChartOptions<'line'>> = {
-  ...baseChartConfig,
+export const trendLineConfig: ChartOptions<'line'> = {
+  ...baseChartConfig as ChartOptions<'line'>,
   elements: {
     line: {
       tension: 0.4, // Smooth curves
@@ -88,8 +89,8 @@ export const trendLineConfig: Partial<ChartOptions<'line'>> = {
 /**
  * Bar chart configuration
  */
-export const barChartConfig: Partial<ChartOptions<'bar'>> = {
-  ...baseChartConfig,
+export const barChartConfig: ChartOptions<'bar'> = {
+  ...baseChartConfig as ChartOptions<'bar'>,
   plugins: {
     ...baseChartConfig.plugins,
     legend: {
@@ -156,7 +157,8 @@ export const chartColors = {
  */
 export const getColorByIndex = (index: number): string => {
   const colors = Object.values(chartColors);
-  return colors[index % colors.length];
+  const color = colors[index % colors.length];
+  return color ?? chartColors.primary;
 };
 
 /**

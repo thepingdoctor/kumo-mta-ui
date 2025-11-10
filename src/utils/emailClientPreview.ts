@@ -4,7 +4,7 @@
  * Generate client-specific preview configurations
  */
 
-import { EmailClient, TemplatePreviewConfig } from '../types/template';
+import type { EmailClient, TemplatePreviewConfig } from '../types/template';
 
 /**
  * Email client viewport configurations
