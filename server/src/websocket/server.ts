@@ -3,7 +3,7 @@
  */
 
 import { Server as HttpServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { serverConfig, wsConfig } from '../config/index.js';
 import { authenticateSocket, AuthenticatedSocket } from './authentication.js';
 import queueEventEmitter from './queueEventEmitter.js';
@@ -148,14 +148,14 @@ export class WebSocketServer {
   /**
    * Broadcast message to all connected clients
    */
-  broadcast(event: string, data: any) {
+  broadcast(event: string, data: unknown) {
     this.io.emit(event, data);
   }
 
   /**
    * Broadcast to specific room
    */
-  broadcastToRoom(room: string, event: string, data: any) {
+  broadcastToRoom(room: string, event: string, data: unknown) {
     this.io.to(room).emit(event, data);
   }
 

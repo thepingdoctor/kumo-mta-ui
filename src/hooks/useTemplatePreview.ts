@@ -4,13 +4,11 @@
  * React hook for template preview rendering
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { EmailClient, TemplatePreviewConfig } from '../types/template';
+import { useState, useCallback } from 'react';
+import { EmailClient } from '../types/template';
 import { mjmlRenderer } from '../services/mjmlRenderer';
 import {
   generateClientPreview,
-  getClientConfig,
-  DEFAULT_PREVIEW_DATA,
 } from '../utils/emailClientPreview';
 
 export interface UseTemplatePreviewResult {

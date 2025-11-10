@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Clock, Mail, AlertCircle, Server, ArrowRight, AlertTriangle } from 'lucide-react';
 import type { MessageQueueItem, MessageQueueStatus } from '../../types/email-queue';
 import { format } from 'date-fns';
@@ -15,27 +15,6 @@ interface QueueTableProps {
  * Optimized with React.memo to prevent unnecessary re-renders
  */
 export const QueueTable: React.FC<QueueTableProps> = memo(({ items, onStatusChange, isLoading }) => {
-  if (isLoading) {
-    return (
-      <div className="rounded-lg bg-white shadow overflow-hidden">
-        <div className="animate-pulse p-4">
-          <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="rounded-lg bg-white shadow p-8 text-center">
-        <Mail className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No messages in queue</h3>
-        <p className="text-sm text-gray-500">Queue is empty or all messages match your filters.</p>
-      </div>
-    );
-  }
-
   /**
    * Get status badge color based on 9-state email queue status
    * Memoized to prevent recalculation on every render
@@ -82,6 +61,27 @@ export const QueueTable: React.FC<QueueTableProps> = memo(({ items, onStatusChan
     };
     return type ? (colors[type] || colors.unknown) : '';
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="rounded-lg bg-white shadow overflow-hidden">
+        <div className="animate-pulse p-4">
+          <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="rounded-lg bg-white shadow p-8 text-center">
+        <Mail className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No messages in queue</h3>
+        <p className="text-sm text-gray-500">Queue is empty or all messages match your filters.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow">

@@ -121,7 +121,7 @@ export interface Alert {
   severity: AlertSeverity;
   status: AlertStatus;
   message: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   triggeredAt: string;
   acknowledgedAt?: string;
   acknowledgedBy?: string;
@@ -205,7 +205,7 @@ export interface AlertRuleFormData {
 export interface NotificationChannelFormData {
   name: string;
   type: NotificationChannelType;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 /**

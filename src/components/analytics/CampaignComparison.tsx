@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsService } from '../../services/analyticsService';
@@ -9,10 +9,10 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
  * Campaign A/B comparison component
  */
 export const CampaignComparison: React.FC = () => {
-  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([
+  const selectedCampaigns = [
     'campaign-1',
     'campaign-2',
-  ]);
+  ];
 
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ['campaign-comparison', selectedCampaigns],

@@ -5,7 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { alertService } from '../services/alertService';
-import type { NotificationChannel, NotificationChannelFormData } from '../types/alert';
+import type { NotificationChannelFormData } from '../types/alert';
 import { toast } from 'react-hot-toast';
 
 export interface UseNotificationChannelsFilters {
@@ -27,8 +27,14 @@ export function useNotificationChannels(filters?: UseNotificationChannelsFilters
       queryClient.invalidateQueries({ queryKey: ['notification-channels'] });
       toast.success('Notification channel created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create notification channel');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to create notification channel';
+      toast.error(message);
     },
   });
 
@@ -40,8 +46,14 @@ export function useNotificationChannels(filters?: UseNotificationChannelsFilters
       queryClient.invalidateQueries({ queryKey: ['notification-channel', updatedChannel.id] });
       toast.success('Notification channel updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update notification channel');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to update notification channel';
+      toast.error(message);
     },
   });
 
@@ -51,8 +63,14 @@ export function useNotificationChannels(filters?: UseNotificationChannelsFilters
       queryClient.invalidateQueries({ queryKey: ['notification-channels'] });
       toast.success('Notification channel deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete notification channel');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to delete notification channel';
+      toast.error(message);
     },
   });
 
@@ -64,8 +82,14 @@ export function useNotificationChannels(filters?: UseNotificationChannelsFilters
       queryClient.invalidateQueries({ queryKey: ['notification-channel', updatedChannel.id] });
       toast.success(`Notification channel ${updatedChannel.enabled ? 'enabled' : 'disabled'}`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to toggle notification channel');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to toggle notification channel';
+      toast.error(message);
     },
   });
 
@@ -78,8 +102,14 @@ export function useNotificationChannels(filters?: UseNotificationChannelsFilters
         toast.error(result.message || 'Test notification failed');
       }
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to test notification channel');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to test notification channel';
+      toast.error(message);
     },
   });
 

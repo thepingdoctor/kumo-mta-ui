@@ -3,7 +3,7 @@
  * Visual alert rule configuration with no-code condition builder
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useAlertRules } from '../../hooks/useAlertRules';
 import { useNotificationChannels } from '../../hooks/useNotificationChannels';
@@ -28,14 +28,12 @@ export const AlertRuleBuilder: React.FC<AlertRuleBuilderProps> = ({
 }) => {
   const { createRule, updateRule, isCreating, isUpdating } = useAlertRules();
   const { channels } = useNotificationChannels({ enabled: true });
-  const [selectedMetric, setSelectedMetric] = useState<string>('');
 
   const {
     register,
     handleSubmit,
     control,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<AlertRuleFormData>({
     defaultValues: {

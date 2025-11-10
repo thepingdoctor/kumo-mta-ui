@@ -5,7 +5,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { alertService } from '../services/alertService';
-import type { Alert } from '../types/alert';
 import { toast } from 'react-hot-toast';
 
 export interface UseAlertsFilters {
@@ -36,8 +35,14 @@ export function useAlerts(filters?: UseAlertsFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
       toast.success('Alert acknowledged');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to acknowledge alert');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to acknowledge alert';
+      toast.error(message);
     },
   });
 
@@ -49,8 +54,14 @@ export function useAlerts(filters?: UseAlertsFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert', updatedAlert.id] });
       toast.success('Alert snoozed');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to snooze alert');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to snooze alert';
+      toast.error(message);
     },
   });
 
@@ -63,8 +74,14 @@ export function useAlerts(filters?: UseAlertsFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
       toast.success('Alert resolved');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to resolve alert');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to resolve alert';
+      toast.error(message);
     },
   });
 
@@ -76,21 +93,33 @@ export function useAlerts(filters?: UseAlertsFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
       toast.success('Alert dismissed');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to dismiss alert');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to dismiss alert';
+      toast.error(message);
     },
   });
 
   const bulkUpdateMutation = useMutation({
-    mutationFn: ({ ids, action, params }: { ids: string[]; action: 'acknowledge' | 'snooze' | 'resolve' | 'dismiss'; params?: any }) =>
+    mutationFn: ({ ids, action, params }: { ids: string[]; action: 'acknowledge' | 'snooze' | 'resolve' | 'dismiss'; params?: unknown }) =>
       alertService.bulkUpdateAlerts(ids, action, params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alert-stats'] });
       toast.success('Alerts updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update alerts');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to update alerts';
+      toast.error(message);
     },
   });
 

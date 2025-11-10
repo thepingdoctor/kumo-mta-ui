@@ -5,7 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { alertService } from '../services/alertService';
-import type { AlertRule, AlertRuleFormData } from '../types/alert';
+import type { AlertRuleFormData } from '../types/alert';
 import { toast } from 'react-hot-toast';
 
 export interface UseAlertRulesFilters {
@@ -30,8 +30,14 @@ export function useAlertRules(filters?: UseAlertRulesFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-rules'] });
       toast.success('Alert rule created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create alert rule');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to create alert rule';
+      toast.error(message);
     },
   });
 
@@ -43,8 +49,14 @@ export function useAlertRules(filters?: UseAlertRulesFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-rule', updatedRule.id] });
       toast.success('Alert rule updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update alert rule');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to update alert rule';
+      toast.error(message);
     },
   });
 
@@ -54,8 +66,14 @@ export function useAlertRules(filters?: UseAlertRulesFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-rules'] });
       toast.success('Alert rule deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete alert rule');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to delete alert rule';
+      toast.error(message);
     },
   });
 
@@ -67,15 +85,27 @@ export function useAlertRules(filters?: UseAlertRulesFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-rule', updatedRule.id] });
       toast.success(`Alert rule ${updatedRule.status === 'enabled' ? 'enabled' : 'disabled'}`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to toggle alert rule');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to toggle alert rule';
+      toast.error(message);
     },
   });
 
   const testRuleMutation = useMutation({
     mutationFn: (id: string) => alertService.testAlertRule(id),
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to test alert rule');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to test alert rule';
+      toast.error(message);
     },
   });
 
@@ -85,8 +115,14 @@ export function useAlertRules(filters?: UseAlertRulesFilters) {
       queryClient.invalidateQueries({ queryKey: ['alert-rules'] });
       toast.success('Alert rule duplicated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to duplicate alert rule');
+    onError: (error: unknown) => {
+      const message = error instanceof Error && 'response' in error &&
+        typeof error.response === 'object' && error.response !== null &&
+        'data' in error.response && typeof error.response.data === 'object' &&
+        error.response.data !== null && 'message' in error.response.data
+        ? String(error.response.data.message)
+        : 'Failed to duplicate alert rule';
+      toast.error(message);
     },
   });
 

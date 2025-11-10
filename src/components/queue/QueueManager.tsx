@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Filter, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useQueue } from '../../hooks/useQueue';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -55,7 +55,7 @@ const QueueManager: React.FC = () => {
   const toast = useToast();
 
   // Real-time queue updates via WebSocket
-  const { lastUpdate, isConnected: wsConnected } = useRealtimeQueue({
+  const { isConnected: wsConnected } = useRealtimeQueue({
     domain: domainFilter || undefined,
     onUpdate: (update) => {
       // Show toast notification for queue changes

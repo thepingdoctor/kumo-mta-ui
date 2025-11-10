@@ -40,8 +40,7 @@ export const useTrendData = (
   const query = useQuery({
     queryKey: ['trend-data', metric, timeRange],
     queryFn: async () => {
-      const response = await apiService.kumomta.getMetrics();
-      const metricsData = response.data;
+      await apiService.kumomta.getMetrics();
 
       // Generate mock historical data (replace with actual API when available)
       const now = new Date();

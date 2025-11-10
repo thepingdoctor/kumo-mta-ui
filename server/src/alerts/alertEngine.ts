@@ -282,18 +282,22 @@ export class AlertEngine extends EventEmitter {
    */
   private extractValue(rule: AlertRule, data: MetricsUpdate | QueueUpdate): number {
     switch (rule.condition.type) {
-      case 'queue_depth':
+      case 'queue_depth': {
         return (data as QueueUpdate).size;
-      case 'bounce_rate':
+      }
+      case 'bounce_rate': {
         const metrics = data as MetricsUpdate;
         const total = metrics.delivered + metrics.bounced;
         return total > 0 ? (metrics.bounced / total) * 100 : 0;
-      case 'delivery_rate':
+      }
+      case 'delivery_rate': {
         return (data as MetricsUpdate).throughput;
-      case 'system_health':
+      }
+      case 'system_health': {
         const m = data as MetricsUpdate;
         const totalMsgs = m.delivered + m.bounced + m.deferred;
         return totalMsgs > 0 ? (m.deferred / totalMsgs) * 100 : 0;
+      }
       default:
         return 0;
     }

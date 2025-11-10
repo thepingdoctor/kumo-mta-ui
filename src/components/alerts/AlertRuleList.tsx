@@ -30,7 +30,6 @@ export const AlertRuleList: React.FC<AlertRuleListProps> = ({ onEdit, onTest }) 
     toggleRule,
     duplicateRule,
     testRule,
-    testResult,
     isTesting,
   } = useAlertRules(filters);
 

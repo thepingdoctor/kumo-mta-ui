@@ -36,7 +36,7 @@ export class SlackChannel {
       return false;
     }
 
-    const { alert, rule } = payload;
+    const { rule } = payload;
     const message = this.formatSlackMessage(payload);
 
     try {

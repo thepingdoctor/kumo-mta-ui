@@ -38,7 +38,7 @@ const Layout: React.FC = memo(() => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [sidebarOpen]);
+  }, [sidebarOpen, closeSidebar]);
 
   // Focus trap for mobile sidebar
   useEffect(() => {

@@ -5,7 +5,7 @@ interface ReportWidget {
   id: string;
   type: 'metric' | 'chart' | 'table';
   title: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
 }
 
 /**

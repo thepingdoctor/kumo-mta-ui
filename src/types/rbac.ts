@@ -4,8 +4,6 @@
  * Extended role-based access control with hierarchical permissions
  */
 
-import { UserRole as BaseUserRole, Permission as BasePermission } from './roles';
-
 /**
  * Extended user roles with super_admin
  */

@@ -31,7 +31,7 @@ export const NotificationChannelConfig: React.FC = () => {
     },
   });
 
-  const handleEdit = (channel: any) => {
+  const handleEdit = (channel: NotificationChannel) => {
     setEditingId(channel.id);
     setSelectedType(channel.type);
     setValue('name', channel.name);

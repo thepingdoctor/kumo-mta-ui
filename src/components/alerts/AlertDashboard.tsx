@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import { useAlerts } from '../../hooks/useAlerts';
 import { useAlertStats } from '../../hooks/useAlerts';
 import { AlertStatusIndicator } from './AlertStatusIndicator';
-import type { AlertSeverity } from '../../types/alert';
 import { formatDistanceToNow } from 'date-fns';
 
 export const AlertDashboard: React.FC = () => {

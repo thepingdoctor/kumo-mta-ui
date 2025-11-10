@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Activity, Mail, AlertTriangle, Clock, Server, Wifi, WifiOff } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { useQuery } from '@tanstack/react-query';
@@ -34,7 +34,6 @@ const Dashboard: React.FC = () => {
   // Real-time metrics via WebSocket
   const {
     metrics: realtimeMetrics,
-    systemMetrics,
     isConnected: wsConnected
   } = useRealtimeMetrics({ enabled: true });
 

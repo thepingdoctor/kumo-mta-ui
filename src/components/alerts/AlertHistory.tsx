@@ -20,7 +20,7 @@ export const AlertHistory: React.FC = () => {
     offset: 0,
   });
 
-  const { alerts, total, isLoading, refetch } = useAlertHistory(filters);
+  const { alerts, total, isLoading } = useAlertHistory(filters);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 

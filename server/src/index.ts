@@ -95,7 +95,7 @@ app.patch('/api/alerts/rules/:id/toggle', (req, res) => {
 });
 
 // Error handling
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, req: express.Request, res: express.Response) => {
   logger.error('Express error:', err);
   res.status(500).json({
     error: 'Internal server error',

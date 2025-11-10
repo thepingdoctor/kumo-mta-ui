@@ -42,8 +42,7 @@ export class AnalyticsService {
     metric: string,
     period: 'hourly' | 'daily' | 'weekly' | 'monthly'
   ): Promise<number[]> {
-    const response = await apiService.kumomta.getMetrics();
-    const data = response.data;
+    await apiService.kumomta.getMetrics();
 
     // Mock aggregation - replace with actual API
     const periodLength = {
@@ -66,7 +65,7 @@ export class AnalyticsService {
     const bounceData = response.data;
 
     // Mock domain performance - replace with actual API
-    return (bounceData.top_domains || []).slice(0, limit).map((domain: any) => ({
+    return (bounceData.top_domains || []).slice(0, limit).map((domain: { domain: string; message_count?: number }) => ({
       domain: domain.domain,
       total_sent: domain.message_count || 0,
       total_delivered: Math.floor((domain.message_count || 0) * 0.95),
@@ -99,8 +98,7 @@ export class AnalyticsService {
    * Export analytics data
    */
   async exportData(
-    format: 'csv' | 'json' | 'pdf',
-    dateRange: { start: Date; end: Date }
+    format: 'csv' | 'json' | 'pdf'
   ): Promise<Blob> {
     const response = await apiService.kumomta.getMetrics();
     const data = response.data;
@@ -131,7 +129,7 @@ export class AnalyticsService {
   /**
    * Format data as CSV
    */
-  private formatAsCSV(data: any): string {
+  private formatAsCSV(data: Record<string, unknown>): string {
     const headers = Object.keys(data).join(',');
     const values = Object.values(data).join(',');
     return `${headers}\n${values}`;

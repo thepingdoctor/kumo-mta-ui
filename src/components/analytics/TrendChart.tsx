@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useTrendData } from '../../hooks/useTrendData';
-import { trendLineConfig, chartColors, getTimeLabels } from '../../utils/chartConfigs';
+import { trendLineConfig, chartColors } from '../../utils/chartConfigs';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 
 interface TrendChartProps {
