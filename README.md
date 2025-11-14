@@ -1025,7 +1025,7 @@ We welcome contributions! Please follow these guidelines:
 
 ### 1. Fork and Clone
 ```bash
-git clone https://github.com/YOUR_USERNAME/kumo-mta-dashboard.git
+git clone https://github.com/thepingdoctor/kumo-mta-dashboard.git
 cd kumo-mta-dashboard
 npm install
 ```
@@ -1148,20 +1148,6 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 🔒 Security
-
-### Reporting Security Issues
-
-**Do not use the public issue tracker for security vulnerabilities.**
-
-Please email security@example.com with:
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
-
-We will respond within 48 hours and work with you to address the issue.
-
 ### Security Features
 
 **Authentication & Authorization**
@@ -1235,7 +1221,7 @@ We will respond within 48 hours and work with you to address the issue.
 
 **Commercial Support**
 For enterprise support, consulting, or custom development:
-- Email: support@example.com
+- Web: [AdamBlackington.com](https://www.adamblackington.com)
 - Priority support with SLA
 - Custom feature development
 - Training and onboarding
@@ -1305,4 +1291,4 @@ When reporting bugs, please include:
 
 **Made with ❤️ for the email infrastructure community**
 
-**Status**: Production Ready | **Version**: 2.0.0 | **Last Updated**: January 2025
+**Status**: Production Ready | **Version**: 2.0.0 | **Last Updated**: November 2025
